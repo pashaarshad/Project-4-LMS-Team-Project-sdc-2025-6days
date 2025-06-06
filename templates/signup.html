@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+    <title>SIGNUP LMS</title>
+</head>
+<body>
+    <div id="heading">
+        <h1>Library SDC Project</h1>
+    </div>
+
+    <div id="signup">
+        <h2>Sign Up</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <br>
+        <form action="{{ url_for('signup') }}" method="POST">
+            <label for="fullname">Full Name:</label>
+            <input type="text" id="fullname" name="fullname" placeholder="Enter Your Full Name" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Enter Your Email" required>
+            
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter Your Phone Number" required>
+            
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Choose a Username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Create Password" required>
+            
+            <label for="confirm-password">Confirm Password:</label>
+            <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm Password" required>
+            
+            <input id="btn" type="submit" value="Sign Up">
+        </form>
+    </div>
+    <div class="button-container">
+        <a href="{{ url_for('login') }}" class="auth-button">Back to Login</a>
+    </div>
+</body>
+</html>

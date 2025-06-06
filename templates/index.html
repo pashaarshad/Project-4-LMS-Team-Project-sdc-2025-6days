@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>LOGIN LMS</title>
+</head>
+<body>
+    <div id="heading">
+        <h1>Library SDC Project</h1>
+    </div>
+
+    <div id="login">
+        <h2>Login </h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <br>
+        <form action="{{ url_for('login_post') }}" method="POST">
+            <label for="username">UserName :</label>
+            <input type="text" id="username" name="username" placeholder="Enter Your UserName" required>
+            <br>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter the Password" required>
+            <br>
+            <input id="btn" type="submit" value="Login">
+        </form>     
+    </div>
+    <div class="button-container">
+        <a href="{{ url_for('forget_password') }}" class="auth-button">Forget password</a>
+        <a href="{{ url_for('signup') }}" class="auth-button">Signup</a>
+    </div>
+</body>
+</html>
