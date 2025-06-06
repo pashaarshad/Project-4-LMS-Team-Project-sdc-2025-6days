@@ -58,9 +58,36 @@ def signup():
 @app.route('/forget-password', methods=['GET', 'POST'])
 def forget_password():
     if request.method == 'POST':
-        # Your password reset logic here
-        pass
-    return render_template('forget_password.html')
+        email = request.form['email']
+        connection = get_database_connection()
+        if connection:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user = cursor.fetchone()
+            
+            if user:
+                # Generate reset token and expiry
+                reset_token = secrets.token_hex(16)
+                reset_token_expiry = datetime.now() + timedelta(hours=1)
+                
+                # Update user record with reset token
+                cursor.execute("""
+                    UPDATE users SET reset_token = %s, reset_token_expiry = %s WHERE email = %s
+                """, (reset_token, reset_token_expiry, email))
+                connection.commit()
+                
+                # Simulate sending email (replace with actual email logic)
+                print(f"Password reset link: http://localhost:5000/reset-password/{reset_token}")
+                flash('Password reset link has been sent to your email.')
+            else:
+                flash('Email not found.')
+            
+            cursor.close()
+            connection.close()
+        else:
+            flash('Database connection error.')
+    
+    return render_template('forget-password.html')
 
 @app.route('/login', methods=['POST'])
 def login_post():
