@@ -1,0 +1,17 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body{
+    justify-items: center;
+}
+#heading{
+    margin-top: 2%;
+    background-color: aqua;
+    border-radius:90px;
+    text-align: center;
+    padding: 10px;
+    width: 44vw;
+    font-size: 1.5vw;
+}
+
