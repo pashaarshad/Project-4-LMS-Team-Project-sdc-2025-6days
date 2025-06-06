@@ -12,7 +12,21 @@
     </div>
 
     <div id="login">
-        <h2>L</h2>     
+        <h2>Login </h2>
+        <br>
+        <form action="#">
+            <label for="username">UserName :</label>
+            <input type="text" id="username" name="username" placeholder="Enter Your UserName" required>
+            <br>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter the Password" required>
+            <br>
+          <input id="btn" type="submit">
+        </form>     
+    </div>
+    <div class="button-container"></div>
+        <button class="auth-button" onclick="forgotPassword()">Forgot Password</button>
+        <button class="auth-button" onclick="signUp()">Sign Up</button>
     </div>
 </body>
 </html>
