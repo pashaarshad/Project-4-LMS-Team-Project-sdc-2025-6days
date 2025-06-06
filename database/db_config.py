@@ -7,7 +7,7 @@ def get_database_connection():
             host='localhost',
             database='lms_db',
             user='root',
-            password='your_password'
+            password='root'
         )
         if connection.is_connected():
             return connection
