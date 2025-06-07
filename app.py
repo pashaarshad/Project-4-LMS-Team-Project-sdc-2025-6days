@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from database.db_config import get_database_connection, init_database
 import secrets
 from datetime import datetime, timedelta
@@ -104,8 +104,13 @@ def login_post():
             connection.close()
 
             if user and check_password_hash(user['password'], password):
-                # Here you would typically set up a session
-                flash('Login successful!')
+                session['username'] = user['username']
+                session['fullname'] = user['fullname']
+                if username == 'admin':
+                    session['is_admin'] = True
+                else:
+                    session['is_admin'] = False
+                flash(f"Welcome, {user['fullname']}!")
                 return redirect(url_for('dashboard'))
             
             flash('Invalid username or password.')
@@ -114,8 +119,38 @@ def login_post():
 
 @app.route('/dashboard')
 def dashboard():
-    # Add authentication check here later
-    return "Welcome to Dashboard!"  # Replace with actual dashboard template
+    if 'username' not in session:
+        flash('Please log in first.')
+        return redirect(url_for('login'))
+    return render_template('dashboard.html', fullname=session['fullname'], is_admin=session.get('is_admin', False))
+
+@app.route('/admin')
+def admin_dashboard():
+    if 'username' not in session or not session.get('is_admin', False):
+        flash('Access denied. Admins only.')
+        return redirect(url_for('login'))
+    return render_template('admin_dashboard.html', fullname=session['fullname'])
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out successfully.')
+    return redirect(url_for('login'))
+
+@app.route('/admin/add-member', methods=['POST'])
+def add_member():
+    # Logic for adding a member
+    return "Member added successfully!"  # Replace with actual implementation
+
+@app.route('/admin/delete-member/<int:member_id>', methods=['POST'])
+def delete_member(member_id):
+    # Logic for deleting a member
+    return f"Member with ID {member_id} deleted successfully!"  # Replace with actual implementation
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+def admin_settings():
+    # Logic for managing settings
+    return "Settings updated successfully!"  # Replace with actual implementation
 
 if __name__ == '__main__':
     init_database()

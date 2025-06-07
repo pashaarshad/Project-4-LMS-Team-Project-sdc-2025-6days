@@ -19,7 +19,7 @@ body {
     padding: 20px;
 }
 
-#heading {
+/* #heading {
     margin-top: 2%;
     background-color: var(--primary-color);
     border-radius: 90px;
@@ -28,7 +28,7 @@ body {
     width: min(44vw, 600px);
     font-size: clamp(16px, 1.5vw, 24px);
     transition: transform 0.3s ease;
-}
+} */
 
 #heading:hover {
     transform: scale(1.02);

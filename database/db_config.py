@@ -1,5 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
+from werkzeug.security import generate_password_hash
 
 def get_database_connection():
     """
@@ -23,6 +24,7 @@ def get_database_connection():
 def init_database():
     """
     Initializes the database by creating the 'users' table if it does not exist.
+    Adds a default admin user with full access.
     """
     connection = get_database_connection()
     if connection:
@@ -35,13 +37,19 @@ def init_database():
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     fullname VARCHAR(255) NOT NULL,
                     email VARCHAR(255) UNIQUE NOT NULL,
-                    phone VARCHAR(20) NOT NULL,
+                    phone VARCHAR(20),
                     username VARCHAR(50) UNIQUE NOT NULL,
                     password VARCHAR(255) NOT NULL,
                     reset_token VARCHAR(100),
                     reset_token_expiry DATETIME
                 )
             """)
+            
+            # Add default admin user
+            cursor.execute("""
+                INSERT IGNORE INTO users (fullname, email, username, password)
+                VALUES ('Admin', 'admin@lms.com', 'admin', %s)
+            """, (generate_password_hash('admin'),))
             
             connection.commit()
             print("Database initialized successfully. 'users' table is ready.")
