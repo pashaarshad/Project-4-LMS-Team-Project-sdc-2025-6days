@@ -1,8 +1,10 @@
 :root {
-    --primary-color: rgb(86, 247, 247);
-    --hover-color: rgb(12, 255, 113);
-    --button-bg: rgb(163, 223, 223);
-    --button-hover: rgb(0, 183, 183);
+    --primary-purple: #6B3E99;
+    --primary-orange: #FF7F41;
+    --primary-teal: #28A9A4;
+    --gradient-bg: linear-gradient(135deg, #6B3E99, #FF7F41, #28A9A4);
+    --text-light: #ffffff;
+    --text-dark: #2c3e50;
 }
 
 * {
@@ -17,6 +19,19 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+}
+
+.admin-body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.main-wrapper {
+    padding-top: 60px; /* Height of the header */
+    display: flex;
+    min-height: calc(100vh - 60px);
 }
 
 /* #heading {
@@ -70,7 +85,8 @@ label {
     height: 5vh;
     margin-top: 20px;
     border-radius: 10px;
-    background-color: var(--primary-color);
+    background: var(--primary-purple);
+    color: white;
     font-size: clamp(14px, 1.5vw, 20px);
     cursor: pointer;
     border: none;
@@ -78,8 +94,9 @@ label {
 }
 
 #btn:hover {
-    background-color: var(--hover-color);
+    background: var(--gradient-bg);
     transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 62, 153, 0.3);
 }
 
 .button-container {
@@ -94,17 +111,282 @@ label {
     font-size: clamp(12px, 1.2vw, 18px);
     border: none;
     border-radius: 10px;
-    background-color: var(--button-bg);
+    background: var(--primary-purple);
+    color: var(--text-light);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .auth-button:hover {
-    background-color: var(--button-hover);
+    background: var(--primary-orange);
     transform: translateY(-2px);
 }
 
+#top-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px; /* Fixed height instead of percentage */
+    background: var(--gradient-bg);
+    color: var(--text-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-icon {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+#top-header h2 {
+    font-size: 20px;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+#admin-name {
+    font-size: 16px;
+    color: white;  /* Changed from #555 to white */
+    text-align: right;
+}
+
+#admin-container {
+    display: flex;
+    margin-top: 10%;
+    height: 90%;
+}
+
+#left-panel {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 20%;
+    height: calc(100vh - 60px);
+    background: #f8f9fa;
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+    color: var(--text-dark);
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-direction: column;
+    border-right: 1px solid #eee;
+    z-index: 1000;
+}
+
+#left-panel.collapsed {
+    transform: translateX(-100%);
+}
+
+#left-panel-content {
+    width: 100%;
+}
+
+#left-panel h1 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#left-panel ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+#left-panel ul li {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+#left-panel ul li ul {
+    margin-left: 20px;
+    font-size: 14px;
+}
+
+#logout-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#main-content {
+    margin-left: 20%;
+    width: 80%;
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    min-height: calc(100vh - 60px);
+    padding: 20px;
+    background-color: #f4f6f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#main-content.expanded {
+    margin-left: 0;
+    width: 100%;
+}
+
+#top-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#top-bar h2 {
+    font-size: 20px;
+    color: #333;
+}
+
+#admin-name {
+    font-size: 16px;
+    color: white;  /* Changed from #555 to white */
+    text-align: right;
+}
+
+.nav-section {
+    width: 100%;
+}
+
+.nav-section-header {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    background: #eeeeee;
+    border-left: 4px solid var(--primary-teal);
+    margin: 15px 0;
+    letter-spacing: 0.5px;
+}
+
+.nav-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-dark);
+    border-left: 4px solid transparent;
+    font-size: 14px;
+    position: relative;
+    background: white;
+}
+
+.nav-item:hover {
+    background: var(--gradient-bg);
+    color: white;
+}
+
+.nav-item.has-submenu {
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nav-item.has-submenu > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-item.has-submenu::after {
+    content: '▼';
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    transition: transform 0.3s ease;
+}
+
+.sub-menu {
+    width: 100%;
+    display: none;
+    background: white;
+    margin-top: 10px;
+}
+
+.nav-item.active .sub-menu {
+    display: block;
+}
+
+.sub-menu li {
+    padding: 10px 20px 10px 45px;
+    font-size: 14px;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 4px solid transparent;
+}
+
+.sub-menu li:hover {
+    background: var(--gradient-bg);
+    color: white;
+    border-left: 4px solid var(--primary-teal);
+}
+
+.center-logo {
+    max-width: 400px;
+    margin: 50px auto;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.1));
+}
+
+.toggle-btn {
+    position: fixed;
+    left: 20%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    width: 25px;
+    height: 40px;
+    background: var(--gradient-bg);
+    border: none;
+    border-radius: 0 5px 5px 0;
+    color: white;
+    cursor: pointer;
+    transition: left 0.3s ease-in-out;
+}
+
+.toggle-btn:hover {
+    background: var(--primary-purple);
+}
+
+.toggle-btn.moved {
+    left: 0;
+}
+
+.arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
 @media (max-width: 768px) {
+    #left-panel {
+        width: 50%;
+    }
+
+    #main-content {
+        margin-left: 50%;
+        width: 50%;
+    }
+
     #heading, #login {
         width: 90vw;
     }

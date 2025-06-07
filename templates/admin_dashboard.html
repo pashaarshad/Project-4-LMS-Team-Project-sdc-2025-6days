@@ -6,14 +6,89 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Admin Dashboard</title>
 </head>
-<body>
-    <div id="heading">
-        <h1>Admin Dashboard</h1>
+<body class="admin-body">
+    <div id="top-header">
+        <h2>Welcome to LMS</h2>
+        <div class="header-right">
+            <p id="admin-name">{{ fullname }}</p>
+            <a href="#" class="header-icon">🏠</a>
+        </div>
     </div>
-    <div id="admin-dashboard">
-        <h2>Welcome, {{ fullname }}!</h2>
-        <p>Manage LMS settings and members.</p>
-        <a href="{{ url_for('logout') }}" class="auth-button">Logout</a>
+    <div class="main-wrapper">
+        <button id="toggle-sidebar" class="toggle-btn">
+            <span class="arrow">◀</span>
+        </button>
+        <!-- Left Panel -->
+        <div id="left-panel">
+            <div class="nav-section">
+                <div class="nav-section-header">
+                    <span>DASHBOARD</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>MIS</span>
+                </div>
+                <div class="nav-section-header">
+                    <span>MAIN NAVIGATION</span>
+                </div>
+                <div class="nav-item has-submenu">
+                    <span>
+                        <span class="nav-icon">📖</span>
+                        <span>Library</span>
+                    </span>
+                    <ul class="sub-menu">
+                        <li>Manage Members</li>
+                        <li>Manage Books</li>
+                        <li>Issue/Return Books</li>
+                        <li>Reports</li>
+                    </ul>
+                </div>
+                <div class="nav-section-header">
+                    <span>SETTING MASTER</span>
+                </div>
+            </div>
+            <div id="logout-container">
+                <a href="{{ url_for('logout') }}" class="auth-button">Logout</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content">
+            <img src="{{ url_for('static', filename='logobg.png') }}" alt="LMS Logo" class="center-logo">
+        </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const libraryItem = document.querySelector('.nav-item.has-submenu');
+            libraryItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.classList.toggle('active');
+                const subMenu = this.querySelector('.sub-menu');
+                if (this.classList.contains('active')) {
+                    subMenu.style.display = 'block';
+                } else {
+                    subMenu.style.display = 'none';
+                }
+            });
+        });
+
+        // Add sidebar toggle functionality
+        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+            const leftPanel = document.getElementById('left-panel');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            const arrow = toggleBtn.querySelector('.arrow');
+            
+            leftPanel.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            toggleBtn.classList.toggle('moved');
+            
+            if (leftPanel.classList.contains('collapsed')) {
+                arrow.textContent = '▶';
+            } else {
+                arrow.textContent = '◀';
+            }
+        });
+    </script>
 </body>
 </html>

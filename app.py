@@ -108,21 +108,17 @@ def login_post():
                 session['fullname'] = user['fullname']
                 if username == 'admin':
                     session['is_admin'] = True
+                    flash(f"Welcome, {user['fullname']}!")
+                    return redirect(url_for('admin_dashboard'))
                 else:
                     session['is_admin'] = False
-                flash(f"Welcome, {user['fullname']}!")
-                return redirect(url_for('dashboard'))
+                    # Regular users can be redirected to a different page or shown an error
+                    flash('Regular user login is not supported.')
+                    return redirect(url_for('login'))
             
             flash('Invalid username or password.')
     
     return redirect(url_for('login'))
-
-@app.route('/dashboard')
-def dashboard():
-    if 'username' not in session:
-        flash('Please log in first.')
-        return redirect(url_for('login'))
-    return render_template('dashboard.html', fullname=session['fullname'], is_admin=session.get('is_admin', False))
 
 @app.route('/admin')
 def admin_dashboard():
