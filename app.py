@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 from database.db_config import get_database_connection, init_database
 import secrets
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+import pandas as pd
+from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # Change this to a secure secret key
@@ -135,18 +137,324 @@ def logout():
 
 @app.route('/admin/add-member', methods=['POST'])
 def add_member():
-    # Logic for adding a member
-    return "Member added successfully!"  # Replace with actual implementation
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            # Create user account with username as password
+            hashed_password = generate_password_hash(data['username'])  # Using username as initial password
+            cursor.execute("""
+                INSERT INTO users (username, fullname, email, phone, password)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (data['username'], data['fullname'], data['email'], data['phone'], hashed_password))
+            
+            connection.commit()
+            return {'success': True}, 200
+        except Exception as e:
+            print(f"Error adding member: {e}")
+            return {'error': str(e)}, 500
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-member/<int:member_id>')
+def get_member(member_id):
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE id = %s", (member_id,))
+        member = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        return {'success': True, **member} if member else {'error': 'Member not found'}, 404
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/update-member', methods=['POST'])
+def update_member():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                UPDATE users 
+                SET username = %s, fullname = %s, email = %s, phone = %s
+                WHERE id = %s
+            """, (data['username'], data['fullname'], data['email'], data['phone'], data['id']))
+            connection.commit()
+            return {'success': True}, 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
 
 @app.route('/admin/delete-member/<int:member_id>', methods=['POST'])
 def delete_member(member_id):
-    # Logic for deleting a member
-    return f"Member with ID {member_id} deleted successfully!"  # Replace with actual implementation
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM users WHERE id = %s", (member_id,))
+            connection.commit()
+            return {'success': True}, 200
+        except Error as e:
+            return {'error': str(e)}, 500
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
 
-@app.route('/admin/settings', methods=['GET', 'POST'])
-def admin_settings():
-    # Logic for managing settings
-    return "Settings updated successfully!"  # Replace with actual implementation
+@app.route('/admin/get-members')
+def get_members():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, fullname, username, email, phone 
+            FROM users 
+            WHERE username != 'admin'
+        """)
+        members = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return {'members': members}
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/export-members')
+def export_members():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            # Get all members data
+            query = """
+                SELECT username, fullname, email, phone 
+                FROM users 
+                WHERE username != 'admin'
+                ORDER BY fullname
+            """
+            df = pd.read_sql(query, connection)
+            
+            # Create Excel file in memory
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Members', index=False)
+                
+                # Get workbook and worksheet objects
+                workbook = writer.book
+                worksheet = writer.sheets['Members']
+                
+                # Add some formatting
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#6B3E99',
+                    'font_color': 'white'
+                })
+                
+                # Format the header row
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                
+                # Adjust columns width
+                for idx, col in enumerate(df.columns):
+                    worksheet.set_column(idx, idx, max(len(col) + 2, df[col].astype(str).str.len().max()))
+            
+            # Prepare the output
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name='lms_members.xlsx'
+            )
+            
+        except Exception as e:
+            print(f"Error exporting members: {e}")
+            return {'error': str(e)}, 500
+        finally:
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-stats')
+def get_stats():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            
+            # Get total members count
+            cursor.execute("SELECT COUNT(*) as total FROM users WHERE username != 'admin'")
+            total_members = cursor.fetchone()['total']
+            
+            # For now, returning placeholder values for borrowed and due (you can update these when implementing book management)
+            stats = {
+                'total_members': total_members,
+                'books_borrowed': 0,  # Update when implementing book management
+                'due_returns': 0      # Update when implementing book management
+            }
+            return stats
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-books')
+def get_books():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT * FROM books 
+                ORDER BY created_at DESC
+            """)
+            books = cursor.fetchall()
+            return {'books': books}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/add-book', methods=['POST'])
+def add_book():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                INSERT INTO books (book_code, title, author, category, quantity, available)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (data['book_code'], data['title'], data['author'], 
+                 data['category'], data['quantity'], data['quantity']))
+            connection.commit()
+            return {'success': True}, 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-book/<int:book_id>')
+def get_book(book_id):
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM books WHERE id = %s", (book_id,))
+            book = cursor.fetchone()
+            return {'success': True, **book} if book else {'error': 'Book not found'}, 404
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/update-book', methods=['POST'])
+def update_book():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                UPDATE books 
+                SET book_code = %s, title = %s, author = %s, 
+                    category = %s, quantity = %s, available = %s
+                WHERE id = %s
+            """, (data['book_code'], data['title'], data['author'], 
+                  data['category'], data['quantity'], data['available'], data['id']))
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/delete-book/<int:book_id>', methods=['POST'])
+def delete_book(book_id):
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM books WHERE id = %s", (book_id,))
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-book-stats')
+def get_book_stats():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            
+            # Get total books count (sum of quantities)
+            cursor.execute("SELECT COUNT(*) as total_titles, SUM(quantity) as total_books FROM books")
+            result = cursor.fetchone()
+            total_books = result['total_books'] or 0
+            total_titles = result['total_titles'] or 0
+            
+            # Get borrowed books count
+            cursor.execute("SELECT SUM(quantity - available) as borrowed FROM books")
+            borrowed = cursor.fetchone()['borrowed'] or 0
+            
+            stats = {
+                'total_books': total_books,
+                'total_titles': total_titles,
+                'books_borrowed': borrowed,
+                'due_returns': 0  # Will be implemented with borrowing system
+            }
+            return stats
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
 
 if __name__ == '__main__':
     init_database()

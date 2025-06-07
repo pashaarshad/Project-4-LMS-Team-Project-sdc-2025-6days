@@ -23,7 +23,7 @@ def get_database_connection():
 
 def init_database():
     """
-    Initializes the database by creating the 'users' table if it does not exist.
+    Initializes the database by creating the 'users' and 'members' tables if they do not exist.
     Adds a default admin user with full access.
     """
     connection = get_database_connection()
@@ -51,8 +51,37 @@ def init_database():
                 VALUES ('Admin', 'admin@lms.com', 'admin', %s)
             """, (generate_password_hash('admin'),))
             
+            # Create the 'members' table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS members (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    usid VARCHAR(20) UNIQUE NOT NULL,
+                    fullname VARCHAR(255) NOT NULL,
+                    class VARCHAR(50) NOT NULL,
+                    mobile VARCHAR(20),
+                    course VARCHAR(50) NOT NULL,
+                    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # Create the 'books' table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS books (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    book_code VARCHAR(20) UNIQUE NOT NULL,
+                    title VARCHAR(255) NOT NULL,
+                    author VARCHAR(255) NOT NULL,
+                    category VARCHAR(100) NOT NULL,
+                    quantity INT DEFAULT 1,
+                    available INT DEFAULT 1,
+                    status ENUM('Available', 'Not Available') DEFAULT 'Available',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
             connection.commit()
-            print("Database initialized successfully. 'users' table is ready.")
+            print("Database initialized successfully. 'users', 'members', and 'books' tables are ready.")
         except Error as e:
             print(f"Error initializing the database: {e}")
         finally:

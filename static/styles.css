@@ -175,16 +175,14 @@ label {
     width: 20%;
     height: calc(100vh - 60px);
     background: #f8f9fa;
-    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
     color: var(--text-dark);
     padding-top: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: flex-start;
-    align-items: stretch;
     flex-direction: column;
     border-right: 1px solid #eee;
     z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
 #left-panel.collapsed {
@@ -219,21 +217,25 @@ label {
     font-size: 14px;
 }
 
+/* okok */
+
 #logout-container {
-    margin-top: 20px;
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid #eee;
     text-align: center;
 }
 
 #main-content {
     margin-left: 20%;
     width: 80%;
-    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
-    min-height: calc(100vh - 60px);
-    padding: 20px;
+    padding: 20px 30px 20px 20px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
     background-color: #f4f6f9;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 #main-content.expanded {
@@ -377,17 +379,387 @@ label {
     transition: transform 0.3s ease;
 }
 
+/* Member Management Styles */
+.page-header {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 10px;
+}
+
+#search-input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 5px rgba(107, 62, 153, 0.2);
+}
+
+#course-filter, #status-filter {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.member-btn, .excel-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    background: var(--gradient-bg);
+    color: white;
+    cursor: pointer;
+}
+
+.member-table {
+    width: 100%;
+    margin-top: 30px;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+    margin-right: -10px;
+    padding-right: 10px;
+}
+
+.member-table table {
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+.member-table th, .member-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.member-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    background: var(--primary-teal);
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #ff4444;
+    color: white;
+}
+
+/* Stats Cards Styles */
+.stats-cards {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.stat-card {
+    flex: 1;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    padding: 20px;
+    background: var(--gradient-bg);
+    border-radius: 12px;
+    color: white;
+}
+
+.stat-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.stat-info p {
+    font-size: 2rem;
+    color: var(--text-dark);
+    font-weight: bold;
+}
+
+#member-management {
+    width: 100%;
+    min-height: calc(100vh - 80px);
+    padding: 20px 30px;
+}
+
+/* Book Management Styles */
+#book-management {
+    width: 100%;
+    min-height: calc(100vh - 80px);
+    padding: 20px 30px;
+    background-color: #f4f6f9;
+    position: relative;
+}
+
+.book-table {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.book-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.1rem;
+}
+
+.book-table th, 
+.book-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.book-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.book-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+}
+
+.book-btn {
+    padding: 12px 25px;
+    background: var(--gradient-bg);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.book-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 62, 153, 0.3);
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient-bg);
+    border-radius: 10px;
+    border: 2px solid #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-teal), var(--primary-purple));
+}
+
+/* Modal Styles */
+.member-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--gradient-bg);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.submit-btn, .cancel-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn {
+    background: var(--gradient-bg);
+    color: white;
+}
+
+.cancel-btn {
+    background: #f1f1f1;
+    color: var(--text-dark);
+}
+
+.cancel-btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 1200px) {
+    .book-table {
+        font-size: 0.9rem;
+    }
+    
+    .stat-info p {
+        font-size: 1.5rem;
+    }
+}
+
 @media (max-width: 768px) {
-    #left-panel {
-        width: 50%;
+    #book-management {
+        padding: 15px;
     }
-
-    #main-content {
-        margin-left: 50%;
-        width: 50%;
+    
+    .stats-cards {
+        flex-direction: column;
+        padding: 0 15px;
     }
-
-    #heading, #login {
-        width: 90vw;
+    
+    .stat-card {
+        width: 100%;
+    }
+    
+    .book-table {
+        overflow-x: auto;
+    }
+    
+    .search-section {
+        flex-wrap: wrap;
+    }
+    
+    .book-btn,
+    .excel-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    #search-input {
+        width: 100%;
     }
 }
