@@ -489,6 +489,11 @@
             window.location.href = '/admin/export-members';
         });
 
+        // Add Excel export functionality for books
+        document.querySelector('#book-management .excel-btn').addEventListener('click', function() {
+            window.location.href = '/admin/export-books';
+        });
+
         function loadStats() {
             fetch('/admin/get-stats')
                 .then(response => response.json())
@@ -500,7 +505,37 @@
                 .catch(error => console.error('Error loading stats:', error));
         }
 
-        // Add search functionality
+        // Update loadBookStats function to show correct counts
+        function loadBookStats() {
+            fetch('/admin/get-book-stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Update the stats in the UI
+                    document.getElementById('total-books').textContent = data.total_titles;
+                    document.getElementById('books-out').textContent = data.books_borrowed;
+                    document.getElementById('books-due').textContent = data.due_returns;
+                })
+                .catch(error => {
+                    console.error('Error loading book stats:', error);
+                    document.getElementById('total-books').textContent = '0';
+                    document.getElementById('books-out').textContent = '0';
+                    document.getElementById('books-due').textContent = '0';
+                });
+        }
+
+        // Ensure both book and member stats are loaded when switching tabs
+        document.querySelector('.sub-menu li:first-child').addEventListener('click', function() {
+            // ...existing code...
+            loadMembers();
+            loadStats();
+        });
+
+        document.querySelector('.sub-menu li:nth-child(2)').addEventListener('click', function() {
+            // ...existing code...
+            loadBooks();
+            loadBookStats();
+        });
+
         document.getElementById('search-input').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const tableBody = document.getElementById('members-table-body');
@@ -615,7 +650,7 @@
                 if (response.ok) {
                     closeBookModal();
                     loadBooks();
-                    loadBookStats();
+                    loadBookStats();  // Reload stats after adding a book
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -626,11 +661,25 @@
             fetch('/admin/get-book-stats')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('total-books').textContent = data.total_books;
+                    // Update the stats in the UI
+                    document.getElementById('total-books').textContent = data.total_titles;
                     document.getElementById('books-out').textContent = data.books_borrowed;
                     document.getElementById('books-due').textContent = data.due_returns;
+                })
+                .catch(error => {
+                    console.error('Error loading book stats:', error);
+                    document.getElementById('total-books').textContent = '0';
+                    document.getElementById('books-out').textContent = '0';
+                    document.getElementById('books-due').textContent = '0';
                 });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add this line to load book stats on page load if book management is visible
+            if (document.getElementById('book-management').style.display === 'block') {
+                loadBookStats();
+            }
+        });
 
         function editBook(id) {
             fetch(`/admin/get-book/${id}`)
@@ -680,7 +729,7 @@
             if (confirm('Are you sure you want to delete this book?')) {
                 fetch(`/admin/delete-book/${id}`, { method: 'POST' })
                     .then(response => response.json())
-                    .then(data => {
+                    .then((data) => {
                         if (data.success) {
                             loadBooks();
                             loadBookStats();

@@ -434,25 +434,77 @@ def get_book_stats():
         try:
             cursor = connection.cursor(dictionary=True)
             
-            # Get total books count (sum of quantities)
-            cursor.execute("SELECT COUNT(*) as total_titles, SUM(quantity) as total_books FROM books")
+            # Get books stats using a single query
+            cursor.execute("""
+                SELECT 
+                    COUNT(*) as total_titles,
+                    COALESCE(SUM(quantity), 0) as total_quantities,
+                    COALESCE(SUM(quantity - available), 0) as borrowed,
+                    COALESCE(SUM(CASE WHEN status = 'Not Available' THEN 1 ELSE 0 END), 0) as unavailable
+                FROM books
+            """)
             result = cursor.fetchone()
-            total_books = result['total_books'] or 0
-            total_titles = result['total_titles'] or 0
-            
-            # Get borrowed books count
-            cursor.execute("SELECT SUM(quantity - available) as borrowed FROM books")
-            borrowed = cursor.fetchone()['borrowed'] or 0
             
             stats = {
-                'total_books': total_books,
-                'total_titles': total_titles,
-                'books_borrowed': borrowed,
-                'due_returns': 0  # Will be implemented with borrowing system
+                'total_titles': int(result['total_titles']),
+                'total_books': int(result['total_titles']),  # Show total unique books
+                'books_borrowed': int(result['borrowed']),
+                'due_returns': int(result['borrowed'])
             }
             return stats
         finally:
             cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/export-books')
+def export_books():
+    if 'username' not in session or not session.get('is_admin', False):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            # Get all books data
+            query = """
+                SELECT book_code, title, author, category, quantity, available, status 
+                FROM books 
+                ORDER BY title
+            """
+            df = pd.read_sql(query, connection)
+            
+            # Create Excel file in memory
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Books', index=False)
+                
+                workbook = writer.book
+                worksheet = writer.sheets['Books']
+                
+                # Add formatting
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#6B3E99',
+                    'font_color': 'white'
+                })
+                
+                # Format headers
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                
+                # Adjust column widths
+                for idx, col in enumerate(df.columns):
+                    worksheet.set_column(idx, idx, max(len(col) + 2, df[col].astype(str).str.len().max()))
+            
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name='lms_books.xlsx'
+            )
+            
+        finally:
             connection.close()
     return {'error': 'Database error'}, 500
 
