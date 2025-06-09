@@ -226,19 +226,17 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Username</th>
-                                <th>Name</th>
-                                <th>Book Code</th>
+                                <th>Issue ID</th>
+                                <th>Member Name</th>
                                 <th>Book Title</th>
-                                <th>Issued Date</th>
+                                <th>Issue Date</th>
                                 <th>Due Date</th>
-                                <th>Due Days</th>
-                                <th>Actions</th>
+                                <th>Days Overdue</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="issues-table-body">
-                            <!-- Issues will be loaded dynamically -->
+                            <!-- Will be populated dynamically -->
                         </tbody>
                     </table>
                 </div>
@@ -920,19 +918,21 @@
                     const tableBody = document.getElementById('issues-table-body');
                     tableBody.innerHTML = '';
                     
-                    data.issues.forEach((issue, index) => {
+                    data.issues.forEach(issue => {
+                        const issueDate = new Date(issue.issue_date).toLocaleDateString();
+                        const dueDate = new Date(issue.due_date).toLocaleDateString();
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${issue.user_id}</td>
-                            <td>${issue.member_name}</td>
-                            <td>${issue.book_code}</td>
+                            <td>${issue.issue_id}</td>
+                            <td>${issue.user_name}</td>
                             <td>${issue.book_title}</td>
-                            <td>${new Date(issue.issued_date).toLocaleDateString()}</td>
-                            <td>${new Date(issue.due_date).toLocaleDateString()}</td>
-                            <td>${issue.due_days > 0 ? issue.due_days : 0}</td>
+                            <td>${issueDate}</td>
+                            <td>${dueDate}</td>
+                            <td>${issue.days_overdue > 0 ? issue.days_overdue : 0}</td>
                             <td>
-                                <button onclick="returnBook(${issue.id})" class="return-btn">Return</button>
+                                <button onclick="returnBook(${issue.issue_id})" class="return-btn">
+                                    Return Book
+                                </button>
                             </td>
                         `;
                         tableBody.appendChild(row);

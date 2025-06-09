@@ -428,6 +428,142 @@ def export_books():
             
     return {'error': 'Database error'}, 500
 
+@app.route('/admin/get-circulation-stats')
+def get_circulation_stats():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    COUNT(*) as under_circulation,
+                    SUM(CASE WHEN due_date = CURDATE() THEN 1 ELSE 0 END) as due_today,
+                    SUM(CASE WHEN due_date < CURDATE() AND return_date IS NULL THEN 1 ELSE 0 END) as overdue,
+                    COUNT(DISTINCT user_id) as members_borrowed
+                FROM issues_books 
+                WHERE return_date IS NULL
+            """)
+            stats = cursor.fetchone()
+            return stats if stats else {'under_circulation': 0, 'due_today': 0, 'overdue': 0, 'members_borrowed': 0}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-issued-books')
+def get_issued_books():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    i.issue_id,
+                    i.issue_date,
+                    i.due_date,
+                    i.return_date,
+                    u.fullname as user_name,
+                    u.id as user_id,
+                    b.title as book_title,
+                    b.book_id,
+                    DATEDIFF(CURDATE(), i.due_date) as days_overdue
+                FROM issues_books i
+                JOIN users u ON i.user_id = u.id
+                JOIN books b ON i.book_id = b.book_id
+                WHERE i.return_date IS NULL
+                ORDER BY i.issue_date DESC
+            """)
+            issues = cursor.fetchall()
+            return {'issues': issues}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/issue-book', methods=['POST'])
+def issue_book():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            
+            # Check if book is available
+            cursor.execute("SELECT available FROM books WHERE book_id = %s", (data['book_id'],))
+            book = cursor.fetchone()
+            
+            if not book or book[0] <= 0:
+                return {'error': 'Book not available'}, 400
+            
+            # Create issue record
+            cursor.execute("""
+                INSERT INTO issues_books (user_id, book_id, due_date)
+                VALUES (%s, %s, DATE_ADD(CURDATE(), INTERVAL 3 DAY))
+            """, (data['user_id'], data['book_id']))
+            
+            # Update book availability
+            cursor.execute("""
+                UPDATE books 
+                SET available = available - 1 
+                WHERE book_id = %s
+            """, (data['book_id'],))
+            
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/return-book/<int:issue_id>', methods=['POST'])
+def return_book(issue_id):
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            
+            # Get book ID from issue record
+            cursor.execute("SELECT book_id FROM issues_books WHERE issue_id = %s", (issue_id,))
+            result = cursor.fetchone()
+            if not result:
+                return {'error': 'Issue record not found'}, 404
+            
+            book_id = result[0]
+            
+            # Update issue record
+            cursor.execute("""
+                UPDATE issues_books 
+                SET return_date = CURRENT_TIMESTAMP,
+                    status = 'returned'
+                WHERE issue_id = %s
+            """, (issue_id,))
+            
+            # Update book availability
+            cursor.execute("""
+                UPDATE books 
+                SET available = available + 1 
+                WHERE book_id = %s
+            """, (book_id,))
+            
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
 @app.route('/logout')
 def logout():
     session.clear()

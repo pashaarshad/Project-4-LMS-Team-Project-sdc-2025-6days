@@ -64,6 +64,21 @@ def init_database():
                 )
             """)
             
+            # Create issues_books table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS issues_books (
+                    issue_id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    book_id INT NOT NULL,
+                    issue_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    due_date DATETIME NOT NULL,
+                    return_date DATETIME NULL,
+                    status ENUM('issued', 'returned') DEFAULT 'issued',
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE
+                )
+            """)
+            
             # Insert sample IT books
             sample_books = [
                 ("Python Programming: An Introduction to Computer Science", "John Zelle", "Programming", 5),
