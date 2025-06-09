@@ -241,6 +241,131 @@ def delete_member(member_id):
             connection.close()
     return {'error': 'Database error'}, 500
 
+@app.route('/admin/books', methods=['GET'])
+def get_books():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT book_id, title, author, category, available 
+                FROM books 
+                ORDER BY book_id
+            """)
+            books = cursor.fetchall()
+            return {'books': books}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/get-book-stats')
+def get_book_stats():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    COUNT(*) as total_books,
+                    SUM(available) as available_books
+                FROM books
+            """)
+            stats = cursor.fetchone()
+            return {'total_books': stats['total_books'], 
+                    'total_available': stats['available_books']}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/add-book', methods=['POST'])
+def add_book():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                INSERT INTO books (title, author, category, available)
+                VALUES (%s, %s, %s, %s)
+            """, (data['title'], data['author'], data['category'], data['available']))
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/edit-book/<int:book_id>')
+def get_book(book_id):
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT book_id, title, author, category, available 
+                FROM books WHERE book_id = %s
+            """, (book_id,))
+            book = cursor.fetchone()
+            return {'success': True, 'book': book} if book else {'error': 'Book not found'}, 404
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/update-book', methods=['POST'])
+def update_book():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    data = request.json
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("""
+                UPDATE books 
+                SET title = %s, author = %s, category = %s, available = %s
+                WHERE book_id = %s
+            """, (data['title'], data['author'], data['category'], 
+                  data['available'], data['book_id']))
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/delete-book/<int:book_id>', methods=['POST'])
+def delete_book(book_id):
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM books WHERE book_id = %s", (book_id,))
+            connection.commit()
+            return {'success': True}, 200
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
 @app.route('/logout')
 def logout():
     session.clear()

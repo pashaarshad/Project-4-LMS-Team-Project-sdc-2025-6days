@@ -164,13 +164,11 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Book Code</th>
+                                <th>ID</th>
                                 <th>Title</th>
                                 <th>Author</th>
                                 <th>Category</th>
-                                <th>Available/Total</th>
-                                <th>Status</th>
+                                <th>Available</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -248,10 +246,6 @@
                     <h2>Add New Book</h2>
                     <form id="bookForm">
                         <div class="form-group">
-                            <label>Book Code:</label>
-                            <input type="text" id="book-code" required>
-                        </div>
-                        <div class="form-group">
                             <label>Title:</label>
                             <input type="text" id="book-title" required>
                         </div>
@@ -262,19 +256,23 @@
                         <div class="form-group">
                             <label>Category:</label>
                             <select id="book-category" required>
-                                <option value="Fiction">Fiction</option>
-                                <option value="Non-Fiction">Non-Fiction</option>
-                                <option value="Reference">Reference</option>
-                                <option value="Textbook">Textbook</option>
+                                <option value="Programming">Programming</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                                <option value="Database">Database</option>
+                                <option value="Networking">Networking</option>
+                                <option value="AI">AI</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Computer Architecture">Computer Architecture</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Quantity:</label>
-                            <input type="number" id="book-quantity" min="1" value="1" required>
+                            <label>Available:</label>
+                            <input type="number" id="book-available" min="0" value="1" required>
                         </div>
                         <div class="button-group">
                             <button type="submit" class="submit-btn">Add Book</button>
-                            <button type="button" class="cancel-btn">Cancel</button>
+                            <button type="button" class="cancel-btn" onclick="closeBookModal()">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -288,10 +286,6 @@
                     <form id="editBookForm">
                         <input type="hidden" id="edit-book-id">
                         <div class="form-group">
-                            <label>Book Code:</label>
-                            <input type="text" id="edit-book-code" required>
-                        </div>
-                        <div class="form-group">
                             <label>Title:</label>
                             <input type="text" id="edit-book-title" required>
                         </div>
@@ -302,15 +296,15 @@
                         <div class="form-group">
                             <label>Category:</label>
                             <select id="edit-book-category" required>
-                                <option value="Fiction">Fiction</option>
-                                <option value="Non-Fiction">Non-Fiction</option>
-                                <option value="Reference">Reference</option>
-                                <option value="Textbook">Textbook</option>
+                                <option value="Programming">Programming</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                                <option value="Database">Database</option>
+                                <option value="Networking">Networking</option>
+                                <option value="AI">AI</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Computer Architecture">Computer Architecture</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Quantity:</label>
-                            <input type="number" id="edit-book-quantity" min="1" required>
                         </div>
                         <div class="form-group">
                             <label>Available:</label>
@@ -318,7 +312,7 @@
                         </div>
                         <div class="button-group">
                             <button type="submit" class="submit-btn">Update Book</button>
-                            <button type="button" class="cancel-btn">Cancel</button>
+                            <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -706,30 +700,33 @@
         });
 
         function loadBooks() {
-            fetch('/admin/get-books')
+            fetch('/admin/books')
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('books-table-body');
+                    const totalBooks = document.getElementById('total-books');
                     tableBody.innerHTML = '';
                     
-                    data.books.forEach((book, index) => {
+                    // Update total books count
+                    totalBooks.textContent = data.books.length;
+                    
+                    data.books.forEach((book) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${book.book_code}</td>
+                            <td>${book.book_id}</td>
                             <td>${book.title}</td>
                             <td>${book.author}</td>
                             <td>${book.category}</td>
-                            <td>${book.available}/${book.quantity}</td>
-                            <td>${book.status}</td>
+                            <td>${book.available}</td>
                             <td class="action-buttons">
-                                <button onclick="editBook(${book.id})" class="edit-btn">✏️</button>
-                                <button onclick="deleteBook(${book.id})" class="delete-btn">🗑️</button>
+                                <button onclick="editBook(${book.book_id})" class="edit-btn">✏️</button>
+                                <button onclick="deleteBook(${book.book_id})" class="delete-btn">🗑️</button>
                             </td>
                         `;
                         tableBody.appendChild(row);
                     });
-                });
+                })
+                .catch(error => console.error('Error loading books:', error));
         }
 
         // Book search functionality
@@ -777,11 +774,10 @@
         document.getElementById('bookForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = {
-                book_code: document.getElementById('book-code').value,
                 title: document.getElementById('book-title').value,
                 author: document.getElementById('book-author').value,
                 category: document.getElementById('book-category').value,
-                quantity: document.getElementById('book-quantity').value
+                available: parseInt(document.getElementById('book-available').value)
             };
 
             try {
@@ -830,11 +826,9 @@
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('edit-book-id').value = data.id;
-                    document.getElementById('edit-book-code').value = data.book_code;
                     document.getElementById('edit-book-title').value = data.title;
                     document.getElementById('edit-book-author').value = data.author;
                     document.getElementById('edit-book-category').value = data.category;
-                    document.getElementById('edit-book-quantity').value = data.quantity;
                     document.getElementById('edit-book-available').value = data.available;
                     document.getElementById('editBookModal').style.display = 'block';
                 });
@@ -844,11 +838,9 @@
             e.preventDefault();
             const formData = {
                 id: document.getElementById('edit-book-id').value,
-                book_code: document.getElementById('edit-book-code').value,
                 title: document.getElementById('edit-book-title').value,
                 author: document.getElementById('edit-book-author').value,
                 category: document.getElementById('edit-book-category').value,
-                quantity: document.getElementById('edit-book-quantity').value,
                 available: document.getElementById('edit-book-available').value
             };
 
