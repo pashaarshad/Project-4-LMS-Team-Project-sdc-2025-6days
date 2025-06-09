@@ -504,13 +504,14 @@ def issue_book():
             if not book or book[0] <= 0:
                 return {'error': 'Book not available'}, 400
             
-            # Calculate due date
-            due_date = datetime.now() + timedelta(days=data['due_days'])
+            # Calculate due date from due_days
+            due_date = datetime.now() + timedelta(days=int(data['due_days']))
             
-            # Create issue record
+            # Create issue record with proper datetime values
             cursor.execute("""
-                INSERT INTO issues_books (user_id, book_id, due_date)
-                VALUES (%s, %s, %s)
+                INSERT INTO issues_books 
+                (user_id, book_id, issue_date, due_date, status) 
+                VALUES (%s, %s, NOW(), %s, 'issued')
             """, (data['user_id'], data['book_id'], due_date))
             
             # Update book availability

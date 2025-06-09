@@ -893,8 +893,45 @@
                 .catch(error => console.error('Error loading circulation stats:', error));
         }
 
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                user_id: document.getElementById('member-select').value,
+                book_id: document.getElementById('book-select').value,
+                due_days: parseInt(document.getElementById('due-days').value)
+            };
+
+            try {
+                const response = await fetch('/admin/issue-book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    // Close modal and refresh data
+                    document.getElementById('issueModal').style.display = 'none';
+                    document.getElementById('issueForm').reset();
+                    
+                    // Reload issued books and circulation stats
+                    await loadIssuedBooks();
+                    await loadCirculationStats();
+                    
+                    // Show success message
+                    alert('Book issued successfully!');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to issue book');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to issue book');
+            }
+        });
+
+        // Update loadIssuedBooks to properly format dates
         function loadIssuedBooks() {
-            fetch('/admin/get-issued-books')
+            return fetch('/admin/get-issued-books')
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('issues-table-body');
