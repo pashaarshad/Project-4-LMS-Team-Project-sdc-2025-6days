@@ -14,7 +14,7 @@
     </div>
 
     <div id="login">
-        <h2>Login </h2>
+        <h2>Student Login</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -24,11 +24,11 @@
         {% endwith %}
         <br>
         <form action="{{ url_for('login_post') }}" method="POST">
-            <label for="username">UserName :</label>
-            <input type="text" id="username" name="username" placeholder="Enter Your UserName" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Enter Your Email" required>
             <br>
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter the Password" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter Password (123)" required>
             <br>
             <input id="btn" type="submit" value="Login">
         </form>     
@@ -36,6 +36,43 @@
     <div class="button-container">
         <a href="{{ url_for('forget_password') }}" class="auth-button">Forget password</a>
         <a href="{{ url_for('signup') }}" class="auth-button">Signup</a>
+        <button onclick="showAdminLogin()" class="admin-login-btn">Login as Admin</button>
     </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideAdminLogin()">&times;</span>
+            <h2>Admin Login</h2>
+            <form action="{{ url_for('admin_login') }}" method="POST">
+                <div class="form-group">
+                    <label for="admin_email">Admin Email:</label>
+                    <input type="email" id="admin_email" name="admin_email" placeholder="admin@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin_password">Admin Password:</label>
+                    <input type="password" id="admin_password" name="admin_password" placeholder="Enter Admin Password" required>
+                </div>
+                <button type="submit" class="submit-btn">Login as Admin</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showAdminLogin() {
+            document.getElementById('adminModal').style.display = 'block';
+        }
+
+        function hideAdminLogin() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('adminModal')) {
+                hideAdminLogin();
+            }
+        }
+    </script>
 </body>
 </html>

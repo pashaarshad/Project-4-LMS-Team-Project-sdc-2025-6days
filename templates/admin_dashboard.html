@@ -89,8 +89,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Username</th>
+                                <th>ID</th>
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
@@ -103,30 +102,28 @@
                     </table>
                 </div>
 
-                <!-- Add Edit Member Modal -->
-                <div class="member-modal" id="editMemberModal">
+                <!-- Update Member Modal -->
+                <div class="member-modal" id="memberModal">
                     <div class="modal-content">
                         <span class="close-btn">&times;</span>
-                        <h2>Edit Member</h2>
-                        <form id="editMemberForm">
-                            <input type="hidden" id="edit-member-id">
-                            <div class="form-group">
-                                <label>Username:</label>
-                                <input type="text" id="edit-username" required>
-                            </div>
+                        <h2>Add New Member</h2>
+                        <form id="memberForm">
                             <div class="form-group">
                                 <label>Full Name:</label>
-                                <input type="text" id="edit-name" required>
+                                <input type="text" id="member-name" required>
                             </div>
                             <div class="form-group">
                                 <label>Email:</label>
-                                <input type="email" id="edit-email" required>
+                                <input type="email" id="member-email" required>
                             </div>
                             <div class="form-group">
                                 <label>Phone Number:</label>
-                                <input type="tel" id="edit-phone" required>
+                                <input type="tel" id="member-phone" required>
                             </div>
-                            <button type="submit" class="submit-btn">Update Member</button>
+                            <div class="button-group">
+                                <button type="submit" class="submit-btn">Add Member</button>
+                                <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -184,6 +181,229 @@
                 </div>
             </div>
 
+            <div id="circulation-management" style="display: none;">
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-info">
+                            <h3>Under Circulation</h3>
+                            <p id="under-circulation">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3>Due Today</h3>
+                            <p id="due-today">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <h3>Due Date Lapsed</h3>
+                            <p id="due-lapsed">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3>Members Borrowed</h3>
+                            <p id="members-borrowed">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-header">
+                    <div class="search-section">
+                        <input type="text" id="issue-search" placeholder="Search by USID, Name or Book">
+                        <button class="issue-btn">Issue Book</button>
+                        <button class="excel-btn">Excel</button>
+                    </div>
+                </div>
+                <div class="issue-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Username</th>
+                                <th>Name</th>
+                                <th>Book Code</th>
+                                <th>Book Title</th>
+                                <th>Issued Date</th>
+                                <th>Due Date</th>
+                                <th>Due Days</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issues-table-body">
+                            <!-- Issues will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add Book Modal -->
+            <div class="book-modal" id="bookModal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2>Add New Book</h2>
+                    <form id="bookForm">
+                        <div class="form-group">
+                            <label>Book Code:</label>
+                            <input type="text" id="book-code" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Title:</label>
+                            <input type="text" id="book-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Author:</label>
+                            <input type="text" id="book-author" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category:</label>
+                            <select id="book-category" required>
+                                <option value="Fiction">Fiction</option>
+                                <option value="Non-Fiction">Non-Fiction</option>
+                                <option value="Reference">Reference</option>
+                                <option value="Textbook">Textbook</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity:</label>
+                            <input type="number" id="book-quantity" min="1" value="1" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="submit-btn">Add Book</button>
+                            <button type="button" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add Edit Book Modal -->
+            <div class="book-modal" id="editBookModal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2>Edit Book</h2>
+                    <form id="editBookForm">
+                        <input type="hidden" id="edit-book-id">
+                        <div class="form-group">
+                            <label>Book Code:</label>
+                            <input type="text" id="edit-book-code" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Title:</label>
+                            <input type="text" id="edit-book-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Author:</label>
+                            <input type="text" id="edit-book-author" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category:</label>
+                            <select id="edit-book-category" required>
+                                <option value="Fiction">Fiction</option>
+                                <option value="Non-Fiction">Non-Fiction</option>
+                                <option value="Reference">Reference</option>
+                                <option value="Textbook">Textbook</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity:</label>
+                            <input type="number" id="edit-book-quantity" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Available:</label>
+                            <input type="number" id="edit-book-available" min="0" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="submit-btn">Update Book</button>
+                            <button type="button" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Issue Book Modal -->
+            <div class="issue-modal" id="issueModal">
+                <div class="modal-content">
+                    <div class="issue-header">
+                        <h2>Book Issue</h2>
+                        <div class="issue-date">Issue Date: <span id="current-date"></span> <span id="current-time"></span></div>
+                        <span class="close-btn">&times;</span>
+                    </div>
+                    
+                    <form id="issueForm" class="issue-form">
+                        <!-- Username search section -->
+                        <div class="form-section">
+                            <label>Enter Username:</label>
+                            <div class="search-container">
+                                <input 
+                                    type="text" 
+                                    id="member-username" 
+                                    placeholder="Enter exact username"
+                                    autocomplete="off"
+                                >
+                                <div class="validation-message" id="username-validation"></div>
+                            </div>
+                            <div class="selected-item" id="selected-member">
+                                <div class="selected-info"></div>
+                            </div>
+                        </div>
+
+                        <!-- Book code section -->
+                        <div class="form-section">
+                            <label>Enter Book Code:</label>
+                            <div class="search-container">
+                                <input 
+                                    type="text" 
+                                    id="book-code-input" 
+                                    placeholder="Enter exact book code"
+                                    autocomplete="off"
+                                >
+                                <div class="validation-message" id="book-validation"></div>
+                            </div>
+                            <div class="selected-item" id="selected-book">
+                                <div class="selected-info"></div>
+                            </div>
+                        </div>
+
+                        <!-- Due date section -->
+                        <div class="form-section">
+                            <label>Due Date:</label>
+                            <input type="date" id="due-date" required>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="submit-btn" id="issue-submit-btn" disabled>Issue Book</button>
+                            <button type="button" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Issue Book Modal (Simple Example) -->
+            <div class="issue-modal" id="issueModalSimple">
+                <div class="modal-content">
+                    <h2>Issue Book</h2>
+                    <form action="/issue" method="POST">
+                        <label>Search Member:</label><br>
+                        <input type="text" id="memberSearch" onkeyup="searchMembers()" placeholder="Enter member name">
+                        <select name="member_id" id="memberList" required></select><br><br>
+
+                        <label>Search Book:</label><br>
+                        <input type="text" id="bookSearch" onkeyup="searchBooks()" placeholder="Enter book title">
+                        <select name="book_id" id="bookList" required></select><br><br>
+
+                        <label>Due Date:</label>
+                        <input type="date" name="due_date" required><br><br>
+
+                        <button type="submit">Issue Book</button>
+                        <button type="button" onclick="document.getElementById('issueModalSimple').style.display='none'">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
             <img src="{{ url_for('static', filename='logobg.png') }}" alt="LMS Logo" class="center-logo" id="default-content">
         </div>
     </div>
@@ -192,10 +412,6 @@
             <span class="close-btn">&times;</span>
             <h2>Add New Member</h2>
             <form id="memberForm">
-                <div class="form-group">
-                    <label>Username:</label>
-                    <input type="text" id="member-username" required>
-                </div>
                 <div class="form-group">
                     <label>Full Name:</label>
                     <input type="text" id="member-name" required>
@@ -210,90 +426,7 @@
                 </div>
                 <div class="button-group">
                     <button type="submit" class="submit-btn">Add Member</button>
-                    <button type="button" class="cancel-btn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add Book Modal -->
-    <div class="book-modal" id="bookModal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Add New Book</h2>
-            <form id="bookForm">
-                <div class="form-group">
-                    <label>Book Code:</label>
-                    <input type="text" id="book-code" required>
-                </div>
-                <div class="form-group">
-                    <label>Title:</label>
-                    <input type="text" id="book-title" required>
-                </div>
-                <div class="form-group">
-                    <label>Author:</label>
-                    <input type="text" id="book-author" required>
-                </div>
-                <div class="form-group">
-                    <label>Category:</label>
-                    <select id="book-category" required>
-                        <option value="Fiction">Fiction</option>
-                        <option value="Non-Fiction">Non-Fiction</option>
-                        <option value="Reference">Reference</option>
-                        <option value="Textbook">Textbook</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Quantity:</label>
-                    <input type="number" id="book-quantity" min="1" value="1" required>
-                </div>
-                <div class="button-group">
-                    <button type="submit" class="submit-btn">Add Book</button>
-                    <button type="button" class="cancel-btn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add Edit Book Modal -->
-    <div class="book-modal" id="editBookModal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Edit Book</h2>
-            <form id="editBookForm">
-                <input type="hidden" id="edit-book-id">
-                <div class="form-group">
-                    <label>Book Code:</label>
-                    <input type="text" id="edit-book-code" required>
-                </div>
-                <div class="form-group">
-                    <label>Title:</label>
-                    <input type="text" id="edit-book-title" required>
-                </div>
-                <div class="form-group">
-                    <label>Author:</label>
-                    <input type="text" id="edit-book-author" required>
-                </div>
-                <div class="form-group">
-                    <label>Category:</label>
-                    <select id="edit-book-category" required>
-                        <option value="Fiction">Fiction</option>
-                        <option value="Non-Fiction">Non-Fiction</option>
-                        <option value="Reference">Reference</option>
-                        <option value="Textbook">Textbook</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Quantity:</label>
-                    <input type="number" id="edit-book-quantity" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label>Available:</label>
-                    <input type="number" id="edit-book-available" min="0" required>
-                </div>
-                <div class="button-group">
-                    <button type="submit" class="submit-btn">Update Book</button>
-                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -340,6 +473,7 @@
             document.querySelector('.sub-menu li:first-child').addEventListener('click', function() {
                 memberManagement.style.display = 'block';
                 document.getElementById('book-management').style.display = 'none';
+                document.getElementById('circulation-management').style.display = 'none';
                 defaultContent.style.display = 'none';
                 loadMembers(); // Add this line
                 loadStats(); // Add this line
@@ -352,13 +486,16 @@
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('members-table-body');
+                    const totalMembers = document.getElementById('total-members');
                     tableBody.innerHTML = '';
                     
-                    data.members.forEach((member, index) => {
+                    // Update total members count
+                    totalMembers.textContent = data.members.length;
+                    
+                    data.members.forEach((member) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${member.username}</td>
+                            <td>${member.id}</td>
                             <td>${member.fullname}</td>
                             <td>${member.email}</td>
                             <td>${member.phone || '-'}</td>
@@ -374,43 +511,30 @@
         }
 
         function editMember(id) {
-            fetch(`/admin/get-member/${id}`)
+            fetch(`/admin/edit-member/${id}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('edit-member-id').value = data.id;
-                    document.getElementById('edit-username').value = data.username;
-                    document.getElementById('edit-name').value = data.fullname;
-                    document.getElementById('edit-email').value = data.email;
-                    document.getElementById('edit-phone').value = data.phone;
-                    document.getElementById('editMemberModal').style.display = 'block';
-                });
+                    if (data.success) {
+                        const member = data.member;
+                        document.getElementById('member-name').value = member.fullname;
+                        document.getElementById('member-email').value = member.email;
+                        document.getElementById('member-phone').value = member.phone || '';
+                        
+                        // Update form for editing
+                        const form = document.getElementById('memberForm');
+                        form.dataset.mode = 'edit';
+                        form.dataset.memberId = member.id;
+                        
+                        // Update modal title and button
+                        document.querySelector('#memberModal h2').textContent = 'Edit Member';
+                        document.querySelector('#memberModal .submit-btn').textContent = 'Update Member';
+                        
+                        // Show modal
+                        document.getElementById('memberModal').style.display = 'block';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
         }
-
-        document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                id: document.getElementById('edit-member-id').value,
-                username: document.getElementById('edit-username').value,
-                fullname: document.getElementById('edit-name').value,
-                email: document.getElementById('edit-email').value,
-                phone: document.getElementById('edit-phone').value
-            };
-
-            try {
-                const response = await fetch('/admin/update-member', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    document.getElementById('editMemberModal').style.display = 'none';
-                    loadMembers();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        });
 
         function deleteMember(id) {
             if (confirm('Are you sure you want to delete this member?')) {
@@ -418,10 +542,68 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            loadMembers();
+                            loadMembers();  // Reload the table
+                            loadStats();    // Update the stats
                         }
                     })
                     .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Update the member form submission handler
+        document.getElementById('memberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const isEdit = form.dataset.mode === 'edit';
+            
+            const formData = {
+                fullname: document.getElementById('member-name').value,
+                email: document.getElementById('member-email').value,
+                phone: document.getElementById('member-phone').value
+            };
+            
+            if (isEdit) {
+                formData.id = form.dataset.memberId;
+            }
+            
+            const url = isEdit ? '/admin/update-member' : '/admin/add-member';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('memberModal').style.display = 'none';
+                    form.reset();
+                    loadMembers();
+                    loadStats();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Reset form when opening add member modal
+        document.querySelector('.member-btn').addEventListener('click', () => {
+            const form = document.getElementById('memberForm');
+            form.reset();
+            form.dataset.mode = 'add';
+            delete form.dataset.memberId;
+            
+            document.querySelector('#memberModal h2').textContent = 'Add New Member';
+            document.querySelector('#memberModal .submit-btn').textContent = 'Add Member';
+            
+            document.getElementById('memberModal').style.display = 'block';
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('memberModal');
+            if (event.target == modal) {
+                closeModal();
             }
         }
 
@@ -433,7 +615,8 @@
         const cancelBtn = document.querySelector('.cancel-btn');
 
         function closeModal() {
-            memberModal.style.display = 'none';
+            const modal = document.getElementById('memberModal');
+            modal.style.display = 'none';
             document.getElementById('memberForm').reset();
         }
 
@@ -443,46 +626,6 @@
 
         closeBtn.addEventListener('click', closeModal);
         cancelBtn.addEventListener('click', closeModal);
-
-        // Close modal when clicking outside
-        memberModal.addEventListener('click', (e) => {
-            if (e.target === memberModal) {
-                closeModal();
-            }
-        });
-
-        // Prevent modal from closing when clicking inside the modal content
-        modalContent.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        document.getElementById('memberForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                username: document.getElementById('member-username').value,
-                fullname: document.getElementById('member-name').value,
-                email: document.getElementById('member-email').value,
-                phone: document.getElementById('member-phone').value
-            };
-
-            try {
-                const response = await fetch('/admin/add-member', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    memberModal.style.display = 'none';
-                    document.getElementById('memberForm').reset();
-                    loadMembers(); // Refresh the table
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        });
 
         // Add Excel export functionality
         document.querySelector('.excel-btn').addEventListener('click', function() {
@@ -555,6 +698,7 @@
         document.querySelector('.sub-menu li:nth-child(2)').addEventListener('click', function() {
             document.getElementById('member-management').style.display = 'none';
             document.getElementById('book-management').style.display = 'block';
+            document.getElementById('circulation-management').style.display = 'none';
             document.getElementById('default-content').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             loadBooks();
@@ -738,6 +882,479 @@
                     .catch(error => console.error('Error:', error));
             }
         }
+
+        // Add click handler for Issue/Return Books
+        document.querySelector('.sub-menu li:nth-child(3)').addEventListener('click', function() {
+            document.getElementById('member-management').style.display = 'none';
+            document.getElementById('book-management').style.display = 'none';
+            document.getElementById('circulation-management').style.display = 'block';
+            document.getElementById('default-content').style.display = 'none';
+            loadCirculationStats();
+            loadIssuedBooks();
+        });
+
+        function loadCirculationStats() {
+            fetch('/admin/get-circulation-stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('under-circulation').textContent = data.under_circulation;
+                    document.getElementById('due-today').textContent = data.due_today;
+                    document.getElementById('due-lapsed').textContent = data.overdue;
+                    document.getElementById('members-borrowed').textContent = data.members_borrowed;
+                })
+                .catch(error => console.error('Error loading circulation stats:', error));
+        }
+
+        function loadIssuedBooks() {
+            fetch('/admin/get-issued-books')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('issues-table-body');
+                    tableBody.innerHTML = '';
+                    
+                    data.issues.forEach((issue, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${issue.user_id}</td>
+                            <td>${issue.member_name}</td>
+                            <td>${issue.book_code}</td>
+                            <td>${issue.book_title}</td>
+                            <td>${new Date(issue.issued_date).toLocaleDateString()}</td>
+                            <td>${new Date(issue.due_date).toLocaleDateString()}</td>
+                            <td>${issue.due_days > 0 ? issue.due_days : 0}</td>
+                            <td>
+                                <button onclick="returnBook(${issue.id})" class="return-btn">Return</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading issued books:', error));
+        }
+
+        // Issue book functionality
+        function setupIssueForm() {
+            const issueModal = document.getElementById('issueModal');
+            const issueBtn = document.querySelector('.issue-btn');
+            const closeBtn = issueModal.querySelector('.close-btn');
+            const cancelBtn = issueModal.querySelector('.cancel-btn');
+
+            issueBtn.addEventListener('click', () => {
+                issueModal.style.display = 'block';
+            });
+
+            closeBtn.addEventListener('click', () => {
+                issueModal.style.display = 'none';
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                issueModal.style.display = 'none';
+            });
+
+            // Auto-fill member details on USID input
+            document.getElementById('issue-usid').addEventListener('change', async function() {
+                const usid = this.value;
+                try {
+                    const response = await fetch(`/admin/get-member-by-usid/${usid}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('issue-name').value = data.member.fullname;
+                    }
+                } catch (error) {
+                    console.error('Error fetching member details:', error);
+                }
+            });
+
+            // Auto-fill book details on book code input
+            document.getElementById('issue-book-code').addEventListener('change', async function() {
+                const bookCode = this.value;
+                try {
+                    const response = await fetch(`/admin/get-book-by-code/${bookCode}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('issue-book-title').value = data.book.title;
+                    }
+                } catch (error) {
+                    console.error('Error fetching book details:', error);
+                }
+            });
+        }
+
+        setupIssueForm();
+
+        // Search functionality for issued books
+        document.getElementById('issue-search').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tableBody = document.getElementById('issues-table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+
+        function returnBook(issueId) {
+            if (confirm('Are you sure you want to return this book?')) {
+                fetch(`/admin/return-book/${issueId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadIssuedBooks();
+                            loadCirculationStats();
+                        }
+                    })
+                    .catch(error => console.error('Error returning book:', error));
+            }
+        }
+
+        let searchTimeout;
+
+        document.getElementById('member-search').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const searchTerm = e.target.value;
+            const resultsDiv = document.getElementById('member-search-results');
+            
+            if (searchTerm.length < 3) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/admin/search-members/${searchTerm}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        data.members.forEach(member => {
+                            const div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.textContent = `${member.fullname} (${member.username})`;
+                            div.addEventListener('click', () => {
+                                document.getElementById('selected-member').value = member.fullname;
+                                document.getElementById('selected-member-id').value = member.username;
+                                resultsDiv.style.display = 'none';
+                            });
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        document.getElementById('book-search').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const searchTerm = e.target.value;
+            const resultsDiv = document.getElementById('book-search-results');
+            
+            if (searchTerm.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/admin/search-books/${searchTerm}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        data.books.forEach(book => {
+                            const div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.textContent = `${book.title} (${book.book_code}) - Available: ${book.available}`;
+                            div.addEventListener('click', () => {
+                                document.getElementById('selected-book').value = book.title;
+                                document.getElementById('selected-book-code').value = book.book_code;
+                                resultsDiv.style.display = 'none';
+                            });
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        // Set minimum date for due date input
+        document.getElementById('issue-due-date').min = new Date().toISOString().split('T')[0];
+
+        // Submit issue form
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                user_id: document.getElementById('selected-member-id').value,
+                username: document.getElementById('selected-member-id').value,
+                member_name: document.getElementById('selected-member').value,
+                book_code: document.getElementById('selected-book-code').value,
+                book_title: document.getElementById('selected-book').value,
+                due_date: document.getElementById('issue-due-date').value
+            };
+
+            try {
+                const response = await fetch('/admin/issue-book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('issueModal').style.display = 'none';
+                    document.getElementById('issueForm').reset();
+                    loadIssuedBooks();
+                    loadCirculationStats();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to issue book');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to issue book');
+            }
+        });
+
+        // Set current date in issue modal
+        function updateCurrentDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            document.getElementById('current-date').textContent = formattedDate;
+        }
+
+        // Update member search functionality
+        document.getElementById('member-search').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const searchTerm = e.target.value;
+            const resultsDiv = document.getElementById('member-search-results');
+            
+            if (searchTerm.length < 3) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/admin/search-members/${searchTerm}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        if (data.members.length === 0) {
+                            const div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.textContent = 'No members found';
+                            resultsDiv.appendChild(div);
+                        } else {
+                            data.members.forEach(member => {
+                                const div = document.createElement('div');
+                                div.className = 'search-result-item';
+                                div.innerHTML = `
+                                    <div><strong>${member.username}</strong></div>
+                                    <div>${member.fullname}</div>
+                                `;
+                                div.addEventListener('click', () => {
+                                    document.getElementById('selected-member').value = 
+                                        `${member.username} - ${member.fullname}`;
+                                    document.getElementById('selected-member-id').value = member.username;
+                                    resultsDiv.style.display = 'none';
+                                });
+                                resultsDiv.appendChild(div);
+                            });
+                        }
+                        resultsDiv.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        // Initialize issue modal
+        function setupIssueModal() {
+            const issueBtn = document.querySelector('.issue-btn');
+            const issueModal = document.getElementById('issueModal');
+            const closeBtn = issueModal.querySelector('.close-btn');
+            const cancelBtn = issueModal.querySelector('.cancel-btn');
+
+            issueBtn.addEventListener('click', () => {
+                issueModal.style.display = 'block';
+                updateCurrentDate();
+            });
+
+            [closeBtn, cancelBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    issueModal.style.display = 'none';
+                    document.getElementById('issueForm').reset();
+                });
+            });
+        }
+
+        // Call setup function when DOM is loaded
+        document.addEventListener('DOMContentLoaded', setupIssueModal);
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const timeStr = now.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('current-date').textContent = dateStr;
+            document.getElementById('current-time').textContent = timeStr;
+        }
+
+        // Username validation
+        document.getElementById('member-username').addEventListener('input', async function(e) {
+            const username = this.value.trim();
+            const validationDiv = document.getElementById('username-validation');
+            const selectedMemberInfo = document.querySelector('#selected-member .selected-info');
+            const submitBtn = document.getElementById('issue-submit-btn');
+            
+            if (username.length > 0) {
+                try {
+                    const response = await fetch(`/admin/validate-member/${username}`);
+                    const data = await response.json();
+                    
+                    if (data.exists) {
+                        validationDiv.textContent = '✓ Valid username';
+                        validationDiv.className = 'validation-message valid';
+                        selectedMemberInfo.innerHTML = `
+                            <div class="member-details">
+                                <div><strong>${data.member.fullname}</strong></div>
+                                <div>${data.member.email}</div>
+                            </div>
+                        `;
+                        validateForm();
+                    } else {
+                        validationDiv.textContent = '✗ Username not found';
+                        validationDiv.className = 'validation-message invalid';
+                        selectedMemberInfo.innerHTML = '';
+                        submitBtn.disabled = true;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    validationDiv.textContent = 'Error validating username';
+                    validationDiv.className = 'validation-message invalid';
+                    submitBtn.disabled = true;
+                }
+            } else {
+                validationDiv.textContent = '';
+                selectedMemberInfo.innerHTML = '';
+                submitBtn.disabled = true;
+            }
+        });
+
+        // Book code validation
+        document.getElementById('book-code-input').addEventListener('input', async function(e) {
+            const bookCode = this.value.trim();
+            const validationDiv = document.getElementById('book-validation');
+            const selectedBookInfo = document.querySelector('#selected-book .selected-info');
+            const submitBtn = document.getElementById('issue-submit-btn');
+            
+            if (bookCode.length > 0) {
+                try {
+                    const response = await fetch(`/admin/validate-book/${bookCode}`);
+                    const data = await response.json();
+                    
+                    if (data.exists && data.available > 0) {
+                        validationDiv.textContent = '✓ Book available';
+                        validationDiv.className = 'validation-message valid';
+                        selectedBookInfo.innerHTML = `
+                            <div class="book-details">
+                                <div><strong>${data.book.title}</strong></div>
+                                <div>Available: ${data.book.available}/${data.book.quantity}</div>
+                            </div>
+                        `;
+                        validateForm();
+                    } else if (data.exists) {
+                        validationDiv.textContent = '✗ Book not available';
+                        validationDiv.className = 'validation-message invalid';
+                        selectedBookInfo.innerHTML = '';
+                        submitBtn.disabled = true;
+                    } else {
+                        validationDiv.textContent = '✗ Book code not found';
+                        validationDiv.className = 'validation-message invalid';
+                        selectedBookInfo.innerHTML = '';
+                        submitBtn.disabled = true;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    validationDiv.textContent = 'Error validating book code';
+                    validationDiv.className = 'validation-message invalid';
+                    submitBtn.disabled = true;
+                }
+            } else {
+                validationDiv.textContent = '';
+                selectedBookInfo.innerHTML = '';
+                submitBtn.disabled = true;
+            }
+        });
+
+        function validateForm() {
+            const username = document.getElementById('member-username').value.trim();
+            const bookCode = document.getElementById('book-code-input').value.trim();
+            const dueDate = document.getElementById('due-date').value;
+            const submitBtn = document.getElementById('issue-submit-btn');
+            
+            const usernameValid = document.querySelector('#username-validation.valid');
+            const bookValid = document.querySelector('#book-validation.valid');
+            
+            submitBtn.disabled = !(usernameValid && bookValid && dueDate);
+        }
+
+        document.getElementById('due-date').addEventListener('change', validateForm);
+
+        // Update the current date/time every second
+        setInterval(updateDateTime, 1000);
+
+        // Initialize the date/time when the modal opens
+        document.querySelector('.issue-btn').addEventListener('click', () => {
+            updateDateTime();
+            document.getElementById('issueForm').reset();
+            document.getElementById('username-validation').textContent = '';
+            document.getElementById('book-validation').textContent = '';
+            document.querySelector('#selected-member .selected-info').innerHTML = '';
+            document.querySelector('#selected-book .selected-info').innerHTML = '';
+            document.getElementById('issue-submit-btn').disabled = true;
+        });
+
+        async function searchMembers() {
+            const query = document.getElementById("memberSearch").value;
+            const res = await fetch(`/search_member?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            const list = document.getElementById("memberList");
+            list.innerHTML = "";
+            data.results.forEach(item => {
+                const opt = document.createElement("option");
+                opt.value = item.id;
+                opt.textContent = `${item.fullname} (ID: ${item.id})`;
+                list.appendChild(opt);
+            });
+        }
+
+        async function searchBooks() {
+            const query = document.getElementById("bookSearch").value;
+            const res = await fetch(`/search_book?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            const list = document.getElementById("bookList");
+            list.innerHTML = "";
+            data.results.forEach(item => {
+                const opt = document.createElement("option");
+                opt.value = item.id;
+                opt.textContent = `${item.title} (ID: ${item.id})`;
+                list.appendChild(opt);
+            });
+        }
+
+        // Show modal on button click
+        document.querySelector('.issue-btn').addEventListener('click', function() {
+            document.getElementById('issueModalSimple').style.display = 'block';
+        });
     </script>
 </body>
 </html>
