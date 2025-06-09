@@ -278,8 +278,11 @@ def get_book_stats():
                 FROM books
             """)
             stats = cursor.fetchone()
-            return {'total_books': stats['total_books'], 
-                    'total_available': stats['available_books']}
+            return {
+                'total_titles': stats['total_books'] or 0,
+                'books_borrowed': 0,  # You can update this with actual logic
+                'due_returns': 0      # You can update this with actual logic
+            }
         finally:
             cursor.close()
             connection.close()
@@ -364,6 +367,65 @@ def delete_book(book_id):
         finally:
             cursor.close()
             connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/export-books')
+def export_books():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            # Create a pandas DataFrame from the books data
+            query = """
+                SELECT book_id as 'Book ID', 
+                       title as 'Title', 
+                       author as 'Author', 
+                       category as 'Category',
+                       available as 'Available Copies'
+                FROM books
+                ORDER BY book_id
+            """
+            df = pd.read_sql(query, connection)
+            
+            # Create Excel file in memory
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Books', index=False)
+                
+                # Get workbook and worksheet objects
+                workbook = writer.book
+                worksheet = writer.sheets['Books']
+                
+                # Add formatting
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#6B3E99',
+                    'font_color': 'white',
+                    'border': 1
+                })
+                
+                # Format headers
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, len(value) + 5)
+            
+            # Prepare the file for download
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=f'books_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+            
+        except Exception as e:
+            print(f"Error exporting books: {e}")
+            return {'error': 'Failed to export books'}, 500
+        finally:
+            connection.close()
+            
     return {'error': 'Database error'}, 500
 
 @app.route('/logout')

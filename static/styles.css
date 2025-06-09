@@ -684,6 +684,60 @@ label {
     box-shadow: 0 4px 15px rgba(107, 62, 153, 0.3);
 }
 
+/* Enhanced Book Management Search Section */
+#book-management .search-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+#book-search {
+    flex: 1;
+    padding: 12px 20px 12px 45px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #f8f9fa url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20"><path d="M0 0h24v24H0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="%236c757d"/></svg>') no-repeat;
+    background-position: 15px center;
+}
+
+#book-search:focus {
+    outline: none;
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(107, 62, 153, 0.1);
+    background-color: white;
+}
+
+#book-management .excel-btn {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #28A745, #20C997);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+#book-management .excel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+#book-management .excel-btn::before {
+    content: "📊";
+    font-size: 18px;
+}
+
 /* Issue/Return Management Styles */
 #circulation-management {
     width: 100%;

@@ -155,9 +155,14 @@
                 </div>
                 <div class="page-header">
                     <div class="search-section">
-                        <input type="text" id="book-search" placeholder="Search by Title, Author or Code">
+                        <input 
+                            type="text" 
+                            id="book-search" 
+                            placeholder="Search by title, author, or category..."
+                            autocomplete="off"
+                        >
                         <button class="book-btn">Add Book</button>
-                        <button class="excel-btn">Excel</button>
+                        <button onclick="exportBooks()" class="excel-btn">Export to Excel</button>
                     </div>
                 </div>
                 <div class="book-table">
@@ -647,10 +652,12 @@
             fetch('/admin/get-book-stats')
                 .then(response => response.json())
                 .then(data => {
-                    // Update the stats in the UI
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
                     document.getElementById('total-books').textContent = data.total_titles;
-                    document.getElementById('books-out').textContent = data.books_borrowed;
-                    document.getElementById('books-due').textContent = data.due_returns;
+                    document.getElementById('books-out').textContent = data.books_borrowed || '0';
+                    document.getElementById('books-due').textContent = data.due_returns || '0';
                 })
                 .catch(error => {
                     console.error('Error loading book stats:', error);
@@ -696,7 +703,7 @@
             document.getElementById('default-content').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             loadBooks();
-            loadBookStats();
+            loadBookStats();  // Make sure this is called
         });
 
         function loadBooks() {
@@ -707,26 +714,33 @@
                     const totalBooks = document.getElementById('total-books');
                     tableBody.innerHTML = '';
                     
-                    // Update total books count
-                    totalBooks.textContent = data.books.length;
-                    
-                    data.books.forEach((book) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${book.book_id}</td>
-                            <td>${book.title}</td>
-                            <td>${book.author}</td>
-                            <td>${book.category}</td>
-                            <td>${book.available}</td>
-                            <td class="action-buttons">
-                                <button onclick="editBook(${book.book_id})" class="edit-btn">✏️</button>
-                                <button onclick="deleteBook(${book.book_id})" class="delete-btn">🗑️</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
+                    if (data.books && data.books.length > 0) {
+                        // Update total books count
+                        totalBooks.textContent = data.books.length;
+                        
+                        data.books.forEach((book) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${book.book_id}</td>
+                                <td>${book.title}</td>
+                                <td>${book.author}</td>
+                                <td>${book.category}</td>
+                                <td>${book.available}</td>
+                                <td class="action-buttons">
+                                    <button onclick="editBook(${book.book_id})" class="edit-btn">✏️</button>
+                                    <button onclick="deleteBook(${book.book_id})" class="delete-btn">🗑️</button>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        totalBooks.textContent = '0';
+                    }
                 })
-                .catch(error => console.error('Error loading books:', error));
+                .catch(error => {
+                    console.error('Error loading books:', error);
+                    document.getElementById('total-books').textContent = '0';
+                });
         }
 
         // Book search functionality
@@ -801,10 +815,12 @@
             fetch('/admin/get-book-stats')
                 .then(response => response.json())
                 .then(data => {
-                    // Update the stats in the UI
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
                     document.getElementById('total-books').textContent = data.total_titles;
-                    document.getElementById('books-out').textContent = data.books_borrowed;
-                    document.getElementById('books-due').textContent = data.due_returns;
+                    document.getElementById('books-out').textContent = data.books_borrowed || '0';
+                    document.getElementById('books-due').textContent = data.due_returns || '0';
                 })
                 .catch(error => {
                     console.error('Error loading book stats:', error);
