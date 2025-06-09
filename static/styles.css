@@ -1080,3 +1080,37 @@ label {
         width: 100%;
     }
 }
+
+/* Issue Form Enhancements */
+.issue-form .form-group {
+    margin-bottom: 20px;
+}
+
+.issue-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: white;
+}
+
+.issue-form select:focus {
+    outline: none;
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 2px rgba(107, 62, 153, 0.1);
+}
+
+.due-date-preview {
+    display: block;
+    margin-top: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+#current-date-time {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}

@@ -504,11 +504,14 @@ def issue_book():
             if not book or book[0] <= 0:
                 return {'error': 'Book not available'}, 400
             
+            # Calculate due date
+            due_date = datetime.now() + timedelta(days=data['due_days'])
+            
             # Create issue record
             cursor.execute("""
                 INSERT INTO issues_books (user_id, book_id, due_date)
-                VALUES (%s, %s, DATE_ADD(CURDATE(), INTERVAL 3 DAY))
-            """, (data['user_id'], data['book_id']))
+                VALUES (%s, %s, %s)
+            """, (data['user_id'], data['book_id'], due_date))
             
             # Update book availability
             cursor.execute("""
@@ -519,6 +522,10 @@ def issue_book():
             
             connection.commit()
             return {'success': True}, 200
+            
+        except Exception as e:
+            print(f"Error issuing book: {e}")
+            return {'error': str(e)}, 500
         finally:
             cursor.close()
             connection.close()

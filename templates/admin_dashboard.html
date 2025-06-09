@@ -325,54 +325,36 @@
             <div class="issue-modal" id="issueModal">
                 <div class="modal-content">
                     <div class="issue-header">
-                        <h2>Book Issue</h2>
-                        <div class="issue-date">Issue Date: <span id="current-date"></span> <span id="current-time"></span></div>
+                        <h2>Issue Book</h2>
+                        <div class="issue-date">
+                            Issue Date: <span id="current-date-time"></span>
+                        </div>
                         <span class="close-btn">&times;</span>
                     </div>
                     
                     <form id="issueForm" class="issue-form">
-                        <!-- Username search section -->
-                        <div class="form-section">
-                            <label>Enter Username:</label>
-                            <div class="search-container">
-                                <input 
-                                    type="text" 
-                                    id="member-username" 
-                                    placeholder="Enter exact username"
-                                    autocomplete="off"
-                                >
-                                <div class="validation-message" id="username-validation"></div>
-                            </div>
-                            <div class="selected-item" id="selected-member">
-                                <div class="selected-info"></div>
-                            </div>
+                        <div class="form-group">
+                            <label>Select Member:</label>
+                            <select id="member-select" required>
+                                <option value="">Select a member</option>
+                            </select>
                         </div>
 
-                        <!-- Book code section -->
-                        <div class="form-section">
-                            <label>Enter Book Code:</label>
-                            <div class="search-container">
-                                <input 
-                                    type="text" 
-                                    id="book-code-input" 
-                                    placeholder="Enter exact book code"
-                                    autocomplete="off"
-                                >
-                                <div class="validation-message" id="book-validation"></div>
-                            </div>
-                            <div class="selected-item" id="selected-book">
-                                <div class="selected-info"></div>
-                            </div>
+                        <div class="form-group">
+                            <label>Select Book:</label>
+                            <select id="book-select" required>
+                                <option value="">Select a book</option>
+                            </select>
                         </div>
 
-                        <!-- Due date section -->
-                        <div class="form-section">
-                            <label>Due Date:</label>
-                            <input type="date" id="due-date" required>
+                        <div class="form-group">
+                            <label>Due Days:</label>
+                            <input type="number" id="due-days" min="1" value="3" required>
+                            <span class="due-date-preview">Due Date: <span id="due-date-display"></span></span>
                         </div>
 
                         <div class="button-group">
-                            <button type="submit" class="submit-btn" id="issue-submit-btn" disabled>Issue Book</button>
+                            <button type="submit" class="submit-btn">Issue Book</button>
                             <button type="button" class="cancel-btn">Cancel</button>
                         </div>
                     </form>
@@ -947,233 +929,134 @@
             const issueBtn = document.querySelector('.issue-btn');
             const closeBtn = issueModal.querySelector('.close-btn');
             const cancelBtn = issueModal.querySelector('.cancel-btn');
+            const memberSelect = document.getElementById('member-select');
+            const bookSelect = document.getElementById('book-select');
+            const dueDays = document.getElementById('due-days');
 
+            // Load members and books when modal opens
             issueBtn.addEventListener('click', () => {
                 issueModal.style.display = 'block';
+                updateCurrentDateTime();
+                loadMembersForSelect();
+                loadBooksForSelect();
+                updateDueDatePreview();
             });
 
-            closeBtn.addEventListener('click', () => {
-                issueModal.style.display = 'none';
-            });
-
-            cancelBtn.addEventListener('click', () => {
-                issueModal.style.display = 'none';
-            });
-
-            // Auto-fill member details on USID input
-            document.getElementById('issue-usid').addEventListener('change', async function() {
-                const usid = this.value;
-                try {
-                    const response = await fetch(`/admin/get-member-by-usid/${usid}`);
-                    const data = await response.json();
-                    if (data.success) {
-                        document.getElementById('issue-name').value = data.member.fullname;
-                    }
-                } catch (error) {
-                    console.error('Error fetching member details:', error);
-                }
-            });
-
-            // Auto-fill book details on book code input
-            document.getElementById('issue-book-code').addEventListener('change', async function() {
-                const bookCode = this.value;
-                try {
-                    const response = await fetch(`/admin/get-book-by-code/${bookCode}`);
-                    const data = await response.json();
-                    if (data.success) {
-                        document.getElementById('issue-book-title').value = data.book.title;
-                    }
-                } catch (error) {
-                    console.error('Error fetching book details:', error);
-                }
-            });
-        }
-
-        setupIssueForm();
-
-        // Search functionality for issued books
-        document.getElementById('issue-search').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const tableBody = document.getElementById('issues-table-body');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            for (let row of rows) {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
-
-        function returnBook(issueId) {
-            if (confirm('Are you sure you want to return this book?')) {
-                fetch(`/admin/return-book/${issueId}`, { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            loadIssuedBooks();
-                            loadCirculationStats();
-                        }
-                    })
-                    .catch(error => console.error('Error returning book:', error));
-            }
-        }
-
-        let searchTimeout;
-
-        document.getElementById('member-search').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            const searchTerm = e.target.value;
-            const resultsDiv = document.getElementById('member-search-results');
-            
-            if (searchTerm.length < 3) {
-                resultsDiv.style.display = 'none';
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                fetch(`/admin/search-members/${searchTerm}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        resultsDiv.innerHTML = '';
-                        data.members.forEach(member => {
-                            const div = document.createElement('div');
-                            div.className = 'search-result-item';
-                            div.textContent = `${member.fullname} (${member.username})`;
-                            div.addEventListener('click', () => {
-                                document.getElementById('selected-member').value = member.fullname;
-                                document.getElementById('selected-member-id').value = member.username;
-                                resultsDiv.style.display = 'none';
-                            });
-                            resultsDiv.appendChild(div);
-                        });
-                        resultsDiv.style.display = 'block';
-                    });
-            }, 300);
-        });
-
-        document.getElementById('book-search').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            const searchTerm = e.target.value;
-            const resultsDiv = document.getElementById('book-search-results');
-            
-            if (searchTerm.length < 2) {
-                resultsDiv.style.display = 'none';
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                fetch(`/admin/search-books/${searchTerm}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        resultsDiv.innerHTML = '';
-                        data.books.forEach(book => {
-                            const div = document.createElement('div');
-                            div.className = 'search-result-item';
-                            div.textContent = `${book.title} (${book.book_code}) - Available: ${book.available}`;
-                            div.addEventListener('click', () => {
-                                document.getElementById('selected-book').value = book.title;
-                                document.getElementById('selected-book-code').value = book.book_code;
-                                resultsDiv.style.display = 'none';
-                            });
-                            resultsDiv.appendChild(div);
-                        });
-                        resultsDiv.style.display = 'block';
-                    });
-            }, 300);
-        });
-
-        // Set minimum date for due date input
-        document.getElementById('issue-due-date').min = new Date().toISOString().split('T')[0];
-
-        // Submit issue form
-        document.getElementById('issueForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                user_id: document.getElementById('selected-member-id').value,
-                username: document.getElementById('selected-member-id').value,
-                member_name: document.getElementById('selected-member').value,
-                book_code: document.getElementById('selected-book-code').value,
-                book_title: document.getElementById('selected-book').value,
-                due_date: document.getElementById('issue-due-date').value
-            };
-
-            try {
-                const response = await fetch('/admin/issue-book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    document.getElementById('issueModal').style.display = 'none';
+            // Close modal handlers
+            [closeBtn, cancelBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    issueModal.style.display = 'none';
                     document.getElementById('issueForm').reset();
-                    loadIssuedBooks();
-                    loadCirculationStats();
-                } else {
-                    const error = await response.json();
-                    alert(error.error || 'Failed to issue book');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to issue book');
-            }
-        });
+                });
+            });
 
-        // Set current date in issue modal
-        function updateCurrentDate() {
+            // Update due date preview when due days changes
+            dueDays.addEventListener('input', updateDueDatePreview);
+
+            // Form submission
+            document.getElementById('issueForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = {
+                    user_id: memberSelect.value,
+                    book_id: bookSelect.value,
+                    due_days: parseInt(dueDays.value)
+                };
+
+                try {
+                    const response = await fetch('/admin/issue-book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (response.ok) {
+                        issueModal.style.display = 'none';
+                        document.getElementById('issueForm').reset();
+                        loadIssuedBooks();
+                        loadCirculationStats();
+                    } else {
+                        const error = await response.json();
+                        alert(error.error || 'Failed to issue book');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to issue book');
+                }
+            });
+        }
+
+        function updateCurrentDateTime() {
             const now = new Date();
-            const formattedDate = now.toLocaleDateString('en-GB', {
+            const dateTimeStr = now.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-date-time').textContent = dateTimeStr;
+        }
+
+        function loadMembersForSelect() {
+            fetch('/admin/get-members')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('member-select');
+                    select.innerHTML = '<option value="">Select a member</option>';
+                    
+                    data.members.forEach(member => {
+                        const option = document.createElement('option');
+                        option.value = member.id;
+                        option.textContent = `${member.fullname}`;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading members:', error));
+        }
+
+        function loadBooksForSelect() {
+            fetch('/admin/books')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('book-select');
+                    select.innerHTML = '<option value="">Select a book</option>';
+                    
+                    data.books.forEach(book => {
+                        if (book.available > 0) {
+                            const option = document.createElement('option');
+                            option.value = book.book_id;
+                            option.textContent = `${book.book_id} - ${book.title}`;
+                            select.appendChild(option);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading books:', error));
+        }
+
+        function updateDueDatePreview() {
+            const days = parseInt(document.getElementById('due-days').value) || 3;
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + days);
+            
+            const dueDateStr = dueDate.toLocaleDateString('en-GB', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
             });
-            document.getElementById('current-date').textContent = formattedDate;
+            
+            document.getElementById('due-date-display').textContent = dueDateStr;
         }
 
-        // Update member search functionality
-        document.getElementById('member-search').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            const searchTerm = e.target.value;
-            const resultsDiv = document.getElementById('member-search-results');
-            
-            if (searchTerm.length < 3) {
-                resultsDiv.style.display = 'none';
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                fetch(`/admin/search-members/${searchTerm}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        resultsDiv.innerHTML = '';
-                        if (data.members.length === 0) {
-                            const div = document.createElement('div');
-                            div.className = 'search-result-item';
-                            div.textContent = 'No members found';
-                            resultsDiv.appendChild(div);
-                        } else {
-                            data.members.forEach(member => {
-                                const div = document.createElement('div');
-                                div.className = 'search-result-item';
-                                div.innerHTML = `
-                                    <div><strong>${member.username}</strong></div>
-                                    <div>${member.fullname}</div>
-                                `;
-                                div.addEventListener('click', () => {
-                                    document.getElementById('selected-member').value = 
-                                        `${member.username} - ${member.fullname}`;
-                                    document.getElementById('selected-member-id').value = member.username;
-                                    resultsDiv.style.display = 'none';
-                                });
-                                resultsDiv.appendChild(div);
-                            });
-                        }
-                        resultsDiv.style.display = 'block';
-                    });
-            }, 300);
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const modals = [memberModal, bookModal, document.getElementById('issueModal'), document.getElementById('issueModalSimple')];
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    modal.querySelector('form').reset();
+                }
+            });
         });
 
         // Initialize issue modal
@@ -1185,7 +1068,10 @@
 
             issueBtn.addEventListener('click', () => {
                 issueModal.style.display = 'block';
-                updateCurrentDate();
+                updateCurrentDateTime();
+                loadMembersForSelect();
+                loadBooksForSelect();
+                updateDueDatePreview();
             });
 
             [closeBtn, cancelBtn].forEach(btn => {
