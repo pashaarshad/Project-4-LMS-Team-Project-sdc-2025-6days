@@ -428,6 +428,67 @@ def export_books():
             
     return {'error': 'Database error'}, 500
 
+@app.route('/admin/export-issued-books')
+def export_issued_books():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            query = """
+                SELECT 
+                    i.issue_id as 'Issue ID',
+                    u.fullname as 'Member Name',
+                    b.title as 'Book Title',
+                    DATE_FORMAT(i.issue_date, '%Y-%m-%d %H:%i') as 'Issue Date',
+                    DATE_FORMAT(i.due_date, '%Y-%m-%d') as 'Due Date',
+                    CASE 
+                        WHEN i.return_date IS NULL AND i.due_date < CURDATE() 
+                        THEN DATEDIFF(CURDATE(), i.due_date)
+                        ELSE 0 
+                    END as 'Days Overdue',
+                    i.status as 'Status'
+                FROM issues_books i
+                JOIN users u ON i.user_id = u.id
+                JOIN books b ON i.book_id = b.book_id
+                ORDER BY i.issue_date DESC
+            """
+            df = pd.read_sql(query, connection)
+            
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Issued Books', index=False)
+                
+                workbook = writer.book
+                worksheet = writer.sheets['Issued Books']
+                
+                # Add header formatting
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#6B3E99',
+                    'font_color': 'white',
+                    'border': 1
+                })
+                
+                # Format all columns
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, len(value) + 5)
+            
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=f'issued_books_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+            
+        finally:
+            connection.close()
+            
+    return {'error': 'Database error'}, 500
+
 @app.route('/admin/get-circulation-stats')
 def get_circulation_stats():
     if not session.get('is_admin'):

@@ -616,6 +616,11 @@
             window.location.href = '/admin/export-books';
         });
 
+        // Add Excel export functionality for circulation
+        document.querySelector('#circulation-management .excel-btn').addEventListener('click', function() {
+            window.location.href = '/admin/export-issued-books';
+        });
+
         function loadStats() {
             fetch('/admin/get-stats')
                 .then(response => response.json())
