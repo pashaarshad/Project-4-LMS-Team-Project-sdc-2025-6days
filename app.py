@@ -90,7 +90,6 @@ def login_post():
     email = request.form['email']
     password = request.form['password']
     
-    # Check if password is '123' for students
     if password != '123':
         flash('Invalid password. Please use 123 as password.')
         return redirect(url_for('login'))
@@ -106,8 +105,15 @@ def login_post():
                 session['user_id'] = user['id']
                 session['email'] = user['email']
                 session['fullname'] = user['fullname']
-                flash(f"Welcome, {user['fullname']}!")
-                return render_template('dashboard.html', fullname=user['fullname'])
+                
+                # Get user statistics
+                stats = get_user_stats(user['id'])
+                current_books = get_current_books(user['id'])
+                
+                return render_template('dashboard.html', 
+                                     fullname=user['fullname'],
+                                     stats=stats,
+                                     current_books=current_books)
             
             flash('Invalid email address.')
             return redirect(url_for('login'))
@@ -117,6 +123,84 @@ def login_post():
             connection.close()
     
     return redirect(url_for('login'))
+
+def get_user_stats(user_id):
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            
+            # Get total books borrowed
+            cursor.execute("""
+                SELECT 
+                    COUNT(*) as total_borrowed,
+                    SUM(CASE WHEN return_date IS NOT NULL THEN 1 ELSE 0 END) as total_returned,
+                    SUM(CASE WHEN return_date IS NULL THEN 1 ELSE 0 END) as currently_borrowed,
+                    SUM(CASE 
+                        WHEN return_date IS NULL AND CURRENT_DATE > due_date 
+                        THEN DATEDIFF(CURRENT_DATE, due_date) * 10
+                        ELSE 0 
+                    END) as total_fine
+                FROM issues_books 
+                WHERE user_id = %s
+            """, (user_id,))
+            
+            stats = cursor.fetchone()
+            return {
+                'total_borrowed': stats['total_borrowed'] or 0,
+                'total_returned': stats['total_returned'] or 0,
+                'currently_borrowed': stats['currently_borrowed'] or 0,
+                'total_fine': stats['total_fine'] or 0
+            }
+        finally:
+            cursor.close()
+            connection.close()
+    return {
+        'total_borrowed': 0,
+        'total_returned': 0,
+        'currently_borrowed': 0,
+        'total_fine': 0
+    }
+
+def get_current_books(user_id):
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    b.title,
+                    i.issue_date,
+                    i.due_date,
+                    CASE 
+                        WHEN i.due_date >= CURRENT_DATE 
+                        THEN DATEDIFF(i.due_date, CURRENT_DATE)
+                        ELSE 0
+                    END as days_remaining,
+                    CASE 
+                        WHEN CURRENT_DATE > i.due_date 
+                        THEN DATEDIFF(CURRENT_DATE, i.due_date) * 10
+                        ELSE 0
+                    END as fine,
+                    CASE 
+                        WHEN CURRENT_DATE > i.due_date THEN 1
+                        ELSE 0
+                    END as is_overdue
+                FROM issues_books i
+                JOIN books b ON i.book_id = b.book_id
+                WHERE i.user_id = %s AND i.return_date IS NULL
+                ORDER BY i.due_date ASC
+            """, (user_id,))
+            
+            books = cursor.fetchall()
+            for book in books:
+                book['issue_date'] = book['issue_date'].strftime('%Y-%m-%d')
+                book['due_date'] = book['due_date'].strftime('%Y-%m-%d')
+            return books
+        finally:
+            cursor.close()
+            connection.close()
+    return []
 
 @app.route('/admin-login', methods=['POST'])
 def admin_login():

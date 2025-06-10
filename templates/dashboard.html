@@ -1,20 +1,78 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Dashboard</title>
+    <title>User Dashboard</title>
 </head>
 <body>
-    <div id="heading">
-        <h1>Welcome to Library Management System</h1>
-    </div>
-    <div id="dashboard">
-        <h2>Welcome, {{ fullname }}!</h2>
-        <div class="button-container">
+    <div id="top-header">
+        <h2>Welcome to Library Management System</h2>
+        <div class="header-right">
+            <p id="user-name">{{ fullname }}</p>
             <a href="{{ url_for('logout') }}" class="auth-button">Logout</a>
-            <!-- woking now done -->
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <h3>Total Books Borrowed</h3>
+                    <p id="total-borrowed">{{ stats.total_borrowed }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h3>Books Returned</h3>
+                    <p id="total-returned">{{ stats.total_returned }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⌛</div>
+                <div class="stat-info">
+                    <h3>Currently Borrowed</h3>
+                    <p id="currently-borrowed">{{ stats.currently_borrowed }}</p>
+                </div>
+            </div>
+            <div class="stat-card {% if stats.total_fine > 0 %}warning{% endif %}">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>Total Fine</h3>
+                    <p id="total-fine">₹{{ stats.total_fine }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="current-books-section">
+            <h2>Currently Borrowed Books</h2>
+            <div class="books-table-container">
+                <table class="books-table">
+                    <thead>
+                        <tr>
+                            <th>Book Title</th>
+                            <th>Issue Date</th>
+                            <th>Due Date</th>
+                            <th>Days Remaining</th>
+                            <th>Fine (if overdue)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="current-books-body">
+                        {% for book in current_books %}
+                        <tr class="{% if book.is_overdue %}overdue{% endif %}">
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.issue_date }}</td>
+                            <td>{{ book.due_date }}</td>
+                            <td>{{ book.days_remaining }}</td>
+                            <td>{% if book.fine > 0 %}₹{{ book.fine }}{% else %}-{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>
