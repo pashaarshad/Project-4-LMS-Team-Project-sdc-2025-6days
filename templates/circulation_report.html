@@ -1,0 +1,51 @@
+{% extends "admin_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Circulation Report</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Issue ID</th>
+                    <th>Member Name</th>
+                    <th>Book Title</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="circulationTableBody">
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+.overdue {
+    background-color: #ffebee;
+    color: #c62828;
+}
+.borrowed {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+.returned-late {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/circulation_report.js') }}"></script>
+{% endblock %}
