@@ -603,15 +603,23 @@ def return_book(issue_id):
         try:
             cursor = connection.cursor()
             
-            # Get book ID from issue record
-            cursor.execute("SELECT book_id FROM issues_books WHERE issue_id = %s", (issue_id,))
+            # Get book ID and check if already returned
+            cursor.execute("""
+                SELECT book_id, return_date 
+                FROM issues_books 
+                WHERE issue_id = %s
+            """, (issue_id,))
             result = cursor.fetchone()
+            
             if not result:
                 return {'error': 'Issue record not found'}, 404
             
+            if result[1] is not None:  # Check if already returned
+                return {'error': 'Book already returned'}, 400
+            
             book_id = result[0]
             
-            # Update issue record
+            # Update issue record with return date and status
             cursor.execute("""
                 UPDATE issues_books 
                 SET return_date = CURRENT_TIMESTAMP,
@@ -619,7 +627,7 @@ def return_book(issue_id):
                 WHERE issue_id = %s
             """, (issue_id,))
             
-            # Update book availability
+            # Increment available count for the book
             cursor.execute("""
                 UPDATE books 
                 SET available = available + 1 
@@ -627,10 +635,18 @@ def return_book(issue_id):
             """, (book_id,))
             
             connection.commit()
-            return {'success': True}, 200
+            return {
+                'success': True,
+                'message': 'Book returned successfully'
+            }, 200
+            
+        except Exception as e:
+            print(f"Error returning book: {e}")
+            return {'error': str(e)}, 500
         finally:
             cursor.close()
             connection.close()
+    
     return {'error': 'Database error'}, 500
 
 @app.route('/admin/reports')

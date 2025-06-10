@@ -16,6 +16,8 @@ function loadReports() {
             
             data.reports.forEach(report => {
                 const row = document.createElement('tr');
+                row.setAttribute('data-issue-id', report.issue_id);
+                
                 const returnDate = report.return_date ? new Date(report.return_date).toLocaleDateString() : '-';
                 const status = report.return_date ? 'Completed' : 'Borrowed';
                 const daysOverdue = report.days_overdue > 0 ? report.days_overdue : 0;
@@ -29,6 +31,12 @@ function loadReports() {
                     <td>${returnDate}</td>
                     <td>${daysOverdue}</td>
                     <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+                    <td>
+                        ${!report.return_date ? 
+                            `<button onclick="returnBook(${report.issue_id})" class="return-btn">Return Book</button>` :
+                            `<button class="return-btn completed" disabled>Returned</button>`
+                        }
+                    </td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -60,8 +68,31 @@ function returnBook(issueId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Update the UI to show the book as returned
+                const row = document.querySelector(`tr[data-issue-id="${issueId}"]`);
+                if (row) {
+                    // Update status badge
+                    const statusCell = row.querySelector('td:nth-last-child(2)');
+                    if (statusCell) {
+                        statusCell.innerHTML = '<span class="status-badge completed">Completed</span>';
+                    }
+                    
+                    // Update return date
+                    const returnDateCell = row.querySelector('td:nth-child(6)');
+                    if (returnDateCell) {
+                        returnDateCell.textContent = new Date().toLocaleDateString();
+                    }
+                    
+                    // Disable return button
+                    const actionCell = row.querySelector('td:last-child');
+                    if (actionCell) {
+                        actionCell.innerHTML = '<button class="return-btn completed" disabled>Returned</button>';
+                    }
+                }
+                
                 alert('Book returned successfully!');
-                loadReports(); // Reload the reports table
+                // Optionally reload the entire table
+                loadReports();
             } else {
                 alert(data.error || 'Failed to return book');
             }

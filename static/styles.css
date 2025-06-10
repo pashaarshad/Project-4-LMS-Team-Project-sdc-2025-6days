@@ -782,18 +782,33 @@ label {
 }
 
 .return-btn {
-    background: var(--primary-teal);
+    background: linear-gradient(45deg, var(--primary-teal), #2ecc71);
     color: white;
     border: none;
-    padding: 5px 15px;
-    border-radius: 4px;
+    padding: 8px 16px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .return-btn:hover {
-    background: var(--primary-purple);
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(45deg, #2ecc71, var(--primary-teal));
+}
+
+.return-btn.completed {
+    background: #a0a0a0;
+    cursor: default;
+    opacity: 0.7;
+}
+
+.return-btn.completed:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .issue-modal {
