@@ -410,6 +410,9 @@
     </div>
 
     <script>
+        // Reports link is now handled by the anchor tag directly 
+        // This function can be removed since it's no longer needed
+        
         document.addEventListener('DOMContentLoaded', function() {
             const libraryItem = document.querySelector('.nav-item.has-submenu');
             libraryItem.addEventListener('click', function(e) {
