@@ -49,14 +49,14 @@ function filterReports(searchTerm) {
     for (let row of rows) {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(searchTerm) ? '' : 'none';
+    }
+}
 
+function exportReportToExcel() {
+    window.location.href = '/admin/export-reports';
+}
 
-
-
-
-
-
-}    window.location.href = '/admin/export-reports';function exportReportToExcel() {}    }function returnBook(issueId) {
+function returnBook(issueId) {
     if (confirm('Are you sure you want to return this book?')) {
         fetch(`/admin/return-book/${issueId}`, {
             method: 'POST',
