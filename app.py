@@ -42,7 +42,7 @@ def signup():
                 flash('Registration successful! Please login.')
                 return redirect(url_for('login'))
                 
-            except Error as e:
+            except Error as e: # type: ignore
                 flash('Registration failed!')
                 print(f"Error: {e}")
             finally:
