@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Library Reports</title>
+</head>
+<body class="admin-body">
+    <div id="top-header">
+        <h2>Library Reports</h2>
+        <div class="header-right">
+            <p id="admin-name">{{ fullname }}</p>
+            <a href="{{ url_for('admin_dashboard') }}" class="header-icon">🏠</a>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div id="reports-content">
+            <div class="page-header">
+                <div class="search-section">
+                    <input type="text" id="report-search" placeholder="Search by Name, Book Title, or Status">
+                    <button onclick="exportReportToExcel()" class="excel-btn">Export to Excel</button>
+                </div>
+            </div>
+
+            <div class="reports-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Issue ID</th>
+                            <th>Member Name</th>
+                            <th>Book Title</th>
+                            <th>Issue Date</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Days Overdue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body">
+                        <!-- Will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+</body>
+</html>

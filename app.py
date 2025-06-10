@@ -633,6 +633,107 @@ def return_book(issue_id):
             connection.close()
     return {'error': 'Database error'}, 500
 
+@app.route('/admin/reports')
+def reports():
+    if not session.get('is_admin'):
+        return redirect(url_for('login'))
+    return render_template('reports.html', fullname=session.get('fullname'))
+
+@app.route('/admin/get-reports')
+def get_reports():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    i.issue_id,
+                    u.fullname as user_name,
+                    b.title as book_title,
+                    i.issue_date,
+                    i.due_date,
+                    i.return_date,
+                    CASE 
+                        WHEN i.return_date IS NULL AND CURRENT_DATE > i.due_date 
+                        THEN DATEDIFF(CURRENT_DATE, i.due_date)
+                        ELSE 0 
+                    END as days_overdue
+                FROM issues_books i
+                JOIN users u ON i.user_id = u.id
+                JOIN books b ON i.book_id = b.book_id
+                ORDER BY i.issue_date DESC
+            """)
+            reports = cursor.fetchall()
+            return {'reports': reports}
+        finally:
+            cursor.close()
+            connection.close()
+    return {'error': 'Database error'}, 500
+
+@app.route('/admin/export-reports')
+def export_reports():
+    if not session.get('is_admin'):
+        return {'error': 'Unauthorized'}, 401
+    
+    connection = get_database_connection()
+    if connection:
+        try:
+            query = """
+                SELECT 
+                    i.issue_id as 'Issue ID',
+                    u.fullname as 'Member Name',
+                    b.title as 'Book Title',
+                    DATE_FORMAT(i.issue_date, '%Y-%m-%d') as 'Issue Date',
+                    DATE_FORMAT(i.due_date, '%Y-%m-%d') as 'Due Date',
+                    DATE_FORMAT(i.return_date, '%Y-%m-%d') as 'Return Date',
+                    CASE 
+                        WHEN i.return_date IS NULL AND CURRENT_DATE > i.due_date 
+                        THEN DATEDIFF(CURRENT_DATE, i.due_date)
+                        ELSE 0 
+                    END as 'Days Overdue',
+                    CASE 
+                        WHEN i.return_date IS NOT NULL THEN 'Completed'
+                        ELSE 'Borrowed'
+                    END as 'Status'
+                FROM issues_books i
+                JOIN users u ON i.user_id = u.id
+                JOIN books b ON i.book_id = b.book_id
+                ORDER BY i.issue_date DESC
+            """
+            df = pd.read_sql(query, connection)
+            
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Library Reports', index=False)
+                
+                workbook = writer.book
+                worksheet = writer.sheets['Library Reports']
+                
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#6B3E99',
+                    'font_color': 'white',
+                    'border': 1
+                })
+                
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, len(value) + 5)
+            
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=f'library_reports_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+        finally:
+            connection.close()
+    return {'error': 'Database error'}, 500
+
 @app.route('/logout')
 def logout():
     session.clear()
