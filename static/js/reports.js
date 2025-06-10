@@ -20,10 +20,6 @@ function loadReports() {
                 const status = report.return_date ? 'Completed' : 'Borrowed';
                 const daysOverdue = report.days_overdue > 0 ? report.days_overdue : 0;
                 
-                // Add return button if book hasn't been returned
-                const returnButton = !report.return_date ? 
-                    `<button onclick="returnBook(${report.issue_id})" class="return-btn">Return Book</button>` : '';
-                
                 row.innerHTML = `
                     <td>${report.issue_id}</td>
                     <td>${report.user_name}</td>
@@ -32,10 +28,7 @@ function loadReports() {
                     <td>${new Date(report.due_date).toLocaleDateString()}</td>
                     <td>${returnDate}</td>
                     <td>${daysOverdue}</td>
-                    <td>
-                        <span class="status-badge ${status.toLowerCase()}">${status}</span>
-                        ${returnButton}
-                    </td>
+                    <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
                 `;
                 tableBody.appendChild(row);
             });

@@ -231,9 +231,7 @@
                                 <th>Book Title</th>
                                 <th>Issue Date</th>
                                 <th>Due Date</th>
-                                <th>Return Date</th>
                                 <th>Days Overdue</th>
-                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -890,7 +888,7 @@
 
         function loadCirculationStats() {
             fetch('/admin/get-circulation-stats')
-                .then(response => response.json())  // Fix missing parenthesis
+                .then(response => response.json())
                 .then(data => {
                     document.getElementById('under-circulation').textContent = data.under_circulation;
                     document.getElementById('due-today').textContent = data.due_today;
@@ -947,8 +945,6 @@
                     data.issues.forEach(issue => {
                         const issueDate = new Date(issue.issue_date).toLocaleDateString();
                         const dueDate = new Date(issue.due_date).toLocaleDateString();
-                        const returnDate = issue.return_date ? new Date(issue.return_date).toLocaleDateString() : '-';
-                        const status = issue.return_date ? 'Completed' : 'Borrowed';
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${issue.issue_id}</td>
@@ -956,13 +952,11 @@
                             <td>${issue.book_title}</td>
                             <td>${issueDate}</td>
                             <td>${dueDate}</td>
-                            <td>${returnDate}</td>
                             <td>${issue.days_overdue > 0 ? issue.days_overdue : 0}</td>
-                            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
                             <td>
-                                ${!issue.return_date ? 
-                                    `<button onclick="returnBook(${issue.issue_id})" class="return-btn">Return Book</button>` 
-                                    : ''}
+                                <button onclick="returnBook(${issue.issue_id})" class="return-btn">
+                                    Return Book
+                                </button>
                             </td>
                         `;
                         tableBody.appendChild(row);
@@ -971,29 +965,129 @@
                 .catch(error => console.error('Error loading issued books:', error));
         }
 
-        function returnBook(issueId) {
-            if (confirm('Are you sure you want to return this book?')) {
-                fetch(`/admin/return-book/${issueId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Book returned successfully!');
+        // Issue book functionality
+        function setupIssueForm() {
+            const issueModal = document.getElementById('issueModal');
+            const issueBtn = document.querySelector('.issue-btn');
+            const closeBtn = issueModal.querySelector('.close-btn');
+            const cancelBtn = issueModal.querySelector('.cancel-btn');
+            const memberSelect = document.getElementById('member-select');
+            const bookSelect = document.getElementById('book-select');
+            const dueDays = document.getElementById('due-days');
+
+            // Load members and books when modal opens
+            issueBtn.addEventListener('click', () => {
+                issueModal.style.display = 'block';
+                updateCurrentDateTime();
+                loadMembersForSelect();
+                loadBooksForSelect();
+                updateDueDatePreview();
+            });
+
+            // Close modal handlers
+            [closeBtn, cancelBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    issueModal.style.display = 'none';
+                    document.getElementById('issueForm').reset();
+                });
+            });
+
+            // Update due date preview when due days changes
+            dueDays.addEventListener('input', updateDueDatePreview);
+
+            // Form submission
+            document.getElementById('issueForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = {
+                    user_id: memberSelect.value,
+                    book_id: bookSelect.value,
+                    due_days: parseInt(dueDays.value)
+                };
+
+                try {
+                    const response = await fetch('/admin/issue-book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (response.ok) {
+                        issueModal.style.display = 'none';
+                        document.getElementById('issueForm').reset();
                         loadIssuedBooks();
                         loadCirculationStats();
                     } else {
-                        alert(data.error || 'Failed to return book');
+                        const error = await response.json();
+                        alert(error.error || 'Failed to issue book');
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('Error:', error);
-                    alert('Failed to return book');
-                });
-            }
+                    alert('Failed to issue book');
+                }
+            });
+        }
+
+        function updateCurrentDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-date-time').textContent = dateTimeStr;
+        }
+
+        function loadMembersForSelect() {
+            fetch('/admin/get-members')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('member-select');
+                    select.innerHTML = '<option value="">Select a member</option>';
+                    
+                    data.members.forEach(member => {
+                        const option = document.createElement('option');
+                        option.value = member.id;
+                        option.textContent = `${member.fullname}`;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading members:', error));
+        }
+
+        function loadBooksForSelect() {
+            fetch('/admin/books')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('book-select');
+                    select.innerHTML = '<option value="">Select a book</option>';
+                    
+                    data.books.forEach(book => {
+                        if (book.available > 0) {
+                            const option = document.createElement('option');
+                            option.value = book.book_id;
+                            option.textContent = `${book.book_id} - ${book.title}`;
+                            select.appendChild(option);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading books:', error));
+        }
+
+        function updateDueDatePreview() {
+            const days = parseInt(document.getElementById('due-days').value) || 3;
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + days);
+            
+            const dueDateStr = dueDate.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            
+            document.getElementById('due-date-display').textContent = dueDateStr;
         }
 
         // Close modals when clicking outside
