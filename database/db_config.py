@@ -1,5 +1,6 @@
 import mysql.connector
 import os
+from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +22,16 @@ def get_database_connection():
     except mysql.connector.Error as err:
         print(f"Error connecting to database: {err}")
         return None
+
+def get_sqlalchemy_engine():
+    """
+    Creates a SQLAlchemy engine instance using the DATABASE_URL from environment variables.
+    Returns the engine instance if successful, otherwise None.
+    """
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        return create_engine(database_url)
+    return None
 
 def init_database():
     """
