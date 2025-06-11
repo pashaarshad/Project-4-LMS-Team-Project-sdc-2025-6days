@@ -2,11 +2,23 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database.db_config import get_database_connection, init_database
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()  # Load environment variables
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'fallback-secret-key')
+
+# Add error handling for database connections
+def get_db_connection():
+    retries = 3
+    while retries > 0:
+        connection = get_database_connection()
+        if connection:
+            return connection
+        retries -= 1
+        time.sleep(1)
+    return None
 
 @app.route('/')
 @app.route('/login')
