@@ -1,13 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 from database.db_config import get_database_connection, init_database
-import secrets
-from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
-import pandas as pd
-from io import BytesIO
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'  # Change this to a secure secret key
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'fallback-secret-key')
 
 @app.route('/')
 @app.route('/login')

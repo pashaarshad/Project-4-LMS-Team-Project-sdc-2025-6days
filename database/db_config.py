@@ -1,5 +1,8 @@
 import mysql.connector
-from mysql.connector import Error
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_database_connection():
     """
@@ -8,16 +11,14 @@ def get_database_connection():
     """
     try:
         connection = mysql.connector.connect(
-            host='localhost',
-            database='lms_db',
-            user='root',
-            password='root'  # Update this if you change the password
+            host=os.getenv('MYSQL_HOST'),
+            user=os.getenv('MYSQL_USER'),
+            password=os.getenv('MYSQL_PASSWORD'),
+            database=os.getenv('MYSQL_DATABASE')
         )
-        if connection.is_connected():
-            print("Successfully connected to the database.")
-            return connection
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+        return connection
+    except mysql.connector.Error as err:
+        print(f"Error connecting to database: {err}")
         return None
 
 def init_database():
