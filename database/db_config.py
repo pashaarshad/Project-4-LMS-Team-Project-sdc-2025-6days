@@ -1,27 +1,37 @@
 import mysql.connector
+from mysql.connector import Error
 import os
-from sqlalchemy import create_engine
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
 def get_database_connection():
     """
-    Establishes a connection to the MySQL database.
-    Returns the connection object if successful, otherwise None.
+    Establishes a connection to the MySQL database with retry logic.
     """
-    try:
-        connection = mysql.connector.connect(
-            host=os.getenv('sql5.freesqldatabase.com'),
-            user=os.getenv('sql5784235'),
-            password=os.getenv('amcfewt9BL'),
-            database=os.getenv('sql5784235'),
-            port=int(os.getenv('3306', '3306'))
-        )
-        return connection
-    except mysql.connector.Error as err:
-        print(f"Error connecting to database: {err}")
-        return None
+    max_retries = 3
+    retry_delay = 5  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            connection = mysql.connector.connect(
+                host='sql5.freesqldatabase.com',  # Hardcoded values instead of env vars
+                user='sql5784235',
+                password='amcfewt9BL',
+                database='sql5784235',
+                port=3306
+            )
+            if connection.is_connected():
+                print(f"Successfully connected to database on attempt {attempt + 1}")
+                return connection
+        except Error as err:
+            print(f"Attempt {attempt + 1}/{max_retries} failed: {err}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+            else:
+                print("Failed to connect to database after all retries")
+    return None
 
 def get_sqlalchemy_engine():
     """
