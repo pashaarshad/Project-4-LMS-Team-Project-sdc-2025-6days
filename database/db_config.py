@@ -12,11 +12,11 @@ def get_database_connection():
     """
     try:
         connection = mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DATABASE'),
-            port=int(os.getenv('MYSQL_PORT', '3306'))
+            host=os.getenv('sql5.freesqldatabase.com'),
+            user=os.getenv('sql5784235'),
+            password=os.getenv('amcfewt9BL'),
+            database=os.getenv('sql5784235'),
+            port=int(os.getenv('3306', '3306'))
         )
         return connection
     except mysql.connector.Error as err:
